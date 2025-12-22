@@ -1,0 +1,111 @@
+Follow The Steps With Numbers  : -
+
+1 - Find Your SSh Key when You Step Your VPS Host in - C:/Users/yourProfile/.shh/id_rsa.pub 
+
+if you Don`t Create Your SSH key yet Open Your Terminal And Past This Code : -
+
+ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+
+2 - Content With Your Host With SSH Key by Your Terminal , Use Any Terminal This will not make different .
+
+3 - Update The System Before Anything by this Code : - 
+
+sudo apt update && sudo apt upgrade -y
+
+4 - Install NodeJS by This Line : - 
+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+- sure The Install is done by this Code : -
+
+node -v
+npm -v
+
+
+5- Install Git For Clone Your Proect From GitHub by this line : -
+
+sudo apt install git -y
+
+git clone https://github.com/your-repo/your-project.git
+
+cd your-project
+
+6 - Install All dependencies For The Project : -
+
+npm install 
+
+7 - If You Have env File as .env.example copy the file content and put the contet in .env by use next lines : 
+
+cp .env.example .env
+nano .env
+
+8 - After Install done and make sure from your env file we start to build the project
+
+npm run build
+
+9 - make the project work all time for that we need to install pm2 by the next line : 
+
+npm install -g pm2
+
+10 - start your project by the next line : -
+
+pm2 start npm --name "Any-name-you-want" -- start
+
+11 - for make the Project always work 
+
+pm2 save
+pm2 startup
+
+12 - install nginx for contect your domin with the project by the next line : -
+
+sudo apt install nginx -y
+
+13 - open a new config file for nginx by the next line :- 
+
+sudo nano /etc/nginx/sites-available/nextjs
+
+14 - put the next code in the file with your domain : -
+
+
+
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+
+
+15 - Active File and Relanuch nginx by the next lines : -
+
+sudo ln -s /etc/nginx/sites-available/nextjs /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+   ----- Don`t Forget Edit Your Domain Setting by adding your ip From VPS Host to Namespaces section in control panal of domain
+
+16 - Secure the website by HTTPS Protocol 
+
+ 1 - install certbot : sudo apt install certbot python3-certbot-nginx -y
+
+ 2 - make a certificate : sudo certbot --nginx -d your_domain
+
+  3 - make sure from Automatic renewal : sudo certbot renew --dry-run
+
+ 16 - Check The Project State After End Of All This by next lines : -
+
+pm2 list
+pm2 logs my-next-app
+
+ 17 - Finally You Can Open Your Site     
+      
+	 

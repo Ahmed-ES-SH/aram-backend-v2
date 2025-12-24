@@ -47,7 +47,7 @@ class UpdateOrganizationRequest extends FormRequest
             'status'                => 'in:published,not_published,under_review',
             'rating'               => 'numeric|min:0|max:5',
             'number_of_reservations' => 'integer|min:0',
-            'order'                 => 'integer|min:1',
+            'order'                 => 'integer|min:1|unique:organizations,order,' . $orgId,
             'is_signed'             => 'boolean',
             'booking_status'        => 'boolean',
             'cooperation_file'      => 'nullable|string',

@@ -27,13 +27,14 @@ class PromoterRatioController extends Controller
     {
         try {
             $request->validate([
-                'signup_points' => 'sometimes|numeric',
-                'purchase_points' => 'sometimes|numeric',
-                'visit_points' => 'sometimes|numeric',
+                'signup_ratio' => 'sometimes|numeric',
+                'purchase_ratio' => 'sometimes|numeric',
+                'visit_ratio' => 'sometimes|numeric',
+                'service_ratio' => 'sometimes|numeric',
             ]);
 
             $ratios = PromoterRatio::findOrFail(1);
-            $ratios->update($request->only('signup_points', 'purchase_points', 'visit_points'));
+            $ratios->update($request->only('signup_ratio', 'purchase_ratio', 'visit_ratio', 'service_ratio'));
             return $this->successResponse($ratios, 200);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);

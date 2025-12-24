@@ -111,13 +111,31 @@ class CategoryController extends Controller
 
 
 
-    public function publicCategories()
+    public function publicCategories(Request $request)
     {
         try {
+
+            $request->validate([
+                'public' => 'nullable|boolean',
+            ]);
+
+            $state = $request->boolean("public") ?? false;
+
+            if ($state == true) {
+                $Categories = Category::withCount(['sub_categories', 'organizations'])
+                    ->with('sub_categories')
+                    ->orderBy('created_at', 'desc')
+                    ->where('is_active', true)
+                    ->paginate(12);
+                if ($Categories->isEmpty()) {
+                    return $this->noContentResponse();
+                }
+                return $this->paginationResponse($Categories, 200);
+            }
+
             $Categories = Category::withCount(['sub_categories', 'organizations'])
                 ->with('sub_categories')
                 ->orderBy('created_at', 'desc')
-                ->where('is_active', true)
                 ->paginate(12);
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
@@ -129,10 +147,16 @@ class CategoryController extends Controller
     }
 
 
-    public function AllPublicCategories()
+    public function AllPublicCategories(Request $request)
     {
         try {
-            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->where('is_active', true)->get();
+            $request->validate([
+                'public' => 'nullable|boolean',
+            ]);
+
+            $state = $request->boolean("public") ?? false;
+
+            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->where('is_active', $state)->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }

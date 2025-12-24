@@ -35,6 +35,10 @@ class ServicePageService
     public function create(array $data, Request $request): ServicePage
     {
         return DB::transaction(function () use ($data, $request) {
+
+            $maxOrder = ServicePage::max('order') ?? 1;
+            $order = $maxOrder + 1;
+
             // Create main service page
             $servicePage = ServicePage::create([
                 'slug' => $data['slug'],
@@ -44,7 +48,7 @@ class ServicePageService
                 'price_before_discount' => $data['price_before_discount'] ?? null,
                 'category_id' => $data['category_id'] ?? null,
                 'type' => $data['type'] ?? 'one_time',
-                'order' => $data['order'] ?? 0,
+                'order' => $data['order'] ?? $order,
                 'status' => $data['status'] ?? 'active',
                 'whatsapp_number' => $data['whatsapp_number'] ?? null,
             ]);

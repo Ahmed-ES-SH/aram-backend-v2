@@ -28,12 +28,35 @@ class ArticleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $articles = Article::orderBy('created_at', 'desc')
-                ->with(['author:id,name,image', 'category', 'interactions:id,article_id,totalReactions', 'tags:id,tag'])
-                ->withCount('comments')
+            $articles = Article::query()
+                ->when($request->filled('category_id'), function ($q) use ($request) {
+                    $q->where('category_id', $request->category_id);
+                })
+                ->when($request->filled('author_id'), function ($q) use ($request) {
+                    $q->where('author_id', $request->author_id);
+                })
+                ->when($request->filled('status'), function ($q) use ($request) {
+                    $q->where('status', $request->status);
+                })
+                ->when($request->filled('from_date'), function ($q) use ($request) {
+                    $q->whereDate('created_at', '>=', $request->from_date);
+                })
+                ->when($request->filled('to_date'), function ($q) use ($request) {
+                    $q->whereDate('created_at', '<=', $request->to_date);
+                })
+                ->when($request->filled('search'), function ($q) use ($request) {
+                    $search = $request->search;
+                    $q->where(function ($subQ) use ($search) {
+                        $subQ->where('title_en', 'like', "%{$search}%")
+                            ->orWhere('title_ar', 'like', "%{$search}%");
+                    });
+                })
+                ->orderBy('created_at', 'desc')
+                ->with(['author:id,name,image', 'category', 'interactions:id,article_id,totalReactions'])
+                ->withCount('comments', 'tags')
                 ->paginate(20);
 
             if ($articles->total() === 0) {
@@ -41,7 +64,43 @@ class ArticleController extends Controller
             }
 
             return $this->paginationResponse($articles, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+
+    public function getArticlesBySearch(Request $request)
+    {
+        try {
+            // التحقق من صحة الإدخال
+            $validated = $request->validate([
+                'search_content' => 'required|string|min:2'
+            ]);
+
+            // استخدام القيمة الصحيحة
+            $contentSearch = '%' . $validated['search_content'] . '%';
+
+            // البحث فقط في المقالات المنشورة
+            $articles = Article::where('title_en', 'like', $contentSearch)
+                ->orWhere('title_ar', 'like', $contentSearch)
+                ->orWhere('content_en', 'like', $contentSearch)
+                ->orWhere('content_ar', 'like', $contentSearch)
+                ->orderByDesc('views')
+                ->withCount('comments', 'tags')
+                ->with([
+                    'author:id,name,image',
+                    'category:id,title_en,title_ar',
+                    'interactions:id,article_id,totalReactions',
+                ])
+                ->paginate(20);
+
+            if ($articles->total() == 0) {
+                return $this->noContentResponse();
+            }
+
+            return $this->paginationResponse($articles, 200);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -62,7 +121,7 @@ class ArticleController extends Controller
             }
 
             return $this->successResponse($articles, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -133,7 +192,7 @@ class ArticleController extends Controller
             }
 
             return $this->paginationResponse($articles, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -180,7 +239,7 @@ class ArticleController extends Controller
                 ],
                 'message' => 'Articles retrieved successfully'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -238,45 +297,14 @@ class ArticleController extends Controller
             }
 
             return $this->paginationResponse($articles, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
 
 
-    public function getArticlesBySearch(Request $request)
-    {
-        try {
-            // التحقق من صحة الإدخال
-            $validated = $request->validate([
-                'search_content' => 'required|string|min:2'
-            ]);
 
-            // استخدام القيمة الصحيحة
-            $contentSearch = '%' . $validated['search_content'] . '%';
-
-            // البحث فقط في المقالات المنشورة
-            $articles = Article::where('title_en', 'like', $contentSearch)
-                ->orWhere('title_ar', 'like', $contentSearch)
-                ->orWhere('content_en', 'like', $contentSearch)
-                ->orWhere('content_ar', 'like', $contentSearch)
-                ->orderByDesc('views')
-                ->with([
-                    'author:id,name,image',
-                    'category:id,title_en,title_ar'
-                ])
-                ->paginate(20);
-
-            if ($articles->total() == 0) {
-                return $this->noContentResponse();
-            }
-
-            return $this->paginationResponse($articles, 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
 
 
     /**
@@ -293,7 +321,7 @@ class ArticleController extends Controller
             }
             $article->refresh();
             return $this->successResponse($article, 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -303,10 +331,11 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        $article = Article::with(['category', 'tags', 'author', 'interactions'])->findOrFail($id);
-        return $this->successResponse($article, 200);
+
         try {
-        } catch (\Exception $e) {
+            $article = Article::with(['category', 'tags', 'author', 'interactions'])->findOrFail($id);
+            return $this->successResponse($article, 200);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -327,7 +356,7 @@ class ArticleController extends Controller
             }
             $article->refresh();
             return $this->successResponse($article, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -344,7 +373,7 @@ class ArticleController extends Controller
             }
             $article->delete();
             return $this->successResponse(['message' => 'تم حذف المقال بنجاح', 'title' => $article->title_en], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

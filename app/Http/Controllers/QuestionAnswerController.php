@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreQuestionAnswerRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\QuestionAnswer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class QuestionAnswerController extends Controller
 {

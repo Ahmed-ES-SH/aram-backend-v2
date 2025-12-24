@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\TextNormalizer;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Services\ImageService;
 use App\Http\Traits\ApiResponse;
 use App\Models\ArticleCategory;
 use App\Models\Category;
+use Exception;
 use Illuminate\Http\Request;
 
 class ArticleCategoryController extends Controller
@@ -33,7 +35,7 @@ class ArticleCategoryController extends Controller
                 return $this->noContentResponse();
             }
             return $this->paginationResponse($Categories, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -49,8 +51,8 @@ class ArticleCategoryController extends Controller
             }
 
             return $this->successResponse($categories, 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Something went wrong.', 500, $e->getMessage());
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -67,10 +69,8 @@ class ArticleCategoryController extends Controller
             }
 
             return $this->successResponse($categories, 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to fetch categories.', [
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -85,39 +85,36 @@ class ArticleCategoryController extends Controller
             }
 
             return $this->successResponse($categories, 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to fetch categories.', [
-                'error' => $e->getMessage()
-            ], 500);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
     public function search(Request $request)
     {
         try {
-            // التحقق من صحة البيانات
-            $request->validate([
-                'query' => 'required|string|max:255',
-            ]);
+            $query = $request->input('query');
 
-            $keyword = $request->input('query');
+            if (!$query) {
+                return $this->errorResponse([
+                    'message' => 'يرجى إدخال كلمة البحث.',
+                ], 422);
+            }
 
-            // تنفيذ البحث
-            $results = ArticleCategory::search($keyword)->get();
+            // ✅ Normalize Arabic letters
+            $normalizedQuery = TextNormalizer::normalizeArabic($query);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Search results retrieved successfully.',
-                'data' => $results,
-            ]);
-        } catch (\Throwable $e) {
-            // تسجيل الخطأ في اللوجات
+            // ✅ SQL replace chain to normalize Arabic columns
+            $normalizedSql = TextNormalizer::sqlNormalizeColumn('title_ar');
+            // ✅ Execute manual query without Scout
+            $results = ArticleCategory::where(function ($q) use ($normalizedQuery, $normalizedSql) {
+                $q->whereRaw("$normalizedSql LIKE ?", ["%$normalizedQuery%"])
+                    ->orWhere('title_en', 'LIKE', "%$normalizedQuery%");
+            })->paginate(30);
 
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while searching.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->paginationResponse($results, 200);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -130,13 +127,12 @@ class ArticleCategoryController extends Controller
     {
         try {
             $data = $request->validated();
-            $category = new ArticleCategory();
-            $category->fill($data);
+            $category = ArticleCategory::create($data);
             if ($request->has('image')) {
                 $this->imageservice->ImageUploaderwithvariable($request, $category, 'images/articleCategories', 'image');
             }
             return $this->successResponse($category, 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -146,10 +142,11 @@ class ArticleCategoryController extends Controller
      */
     public function show($id)
     {
-        $category = ArticleCategory::findOrFail($id);
-        return $this->successResponse($category, 200);
+
         try {
-        } catch (\Exception $e) {
+            $category = ArticleCategory::findOrFail($id);
+            return $this->successResponse($category, 200);
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -169,7 +166,7 @@ class ArticleCategoryController extends Controller
                 $this->imageservice->ImageUploaderwithvariable($request, $category, 'images/articleCategories');
             }
             return $this->successResponse($category->fresh(), 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -189,7 +186,7 @@ class ArticleCategoryController extends Controller
             $articleCategory->delete();
 
             return $this->successResponse(['name' => $articleCategory->title_en], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

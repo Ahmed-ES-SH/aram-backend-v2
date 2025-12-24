@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedInteger('total_visits')->default(0);
             $table->unsignedInteger('total_signups')->default(0);
             $table->unsignedInteger('total_purchases')->default(0);
+            $table->unsignedInteger('total_purchases_services')->default(0);
             $table->decimal('total_earnings', 10, 2)->default(0);
             $table->timestamps();
         });

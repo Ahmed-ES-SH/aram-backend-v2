@@ -51,6 +51,7 @@ class CreateOrganizationService
                     'password',
                     'title',
                     'description',
+                    'phone_number',
                     'open_at',
                     'close_at',
                     'confirmation_price',
@@ -76,8 +77,6 @@ class CreateOrganizationService
             // 🔒 Use transaction for entire process
             return DB::transaction(function () use ($request, $organizationData, $offerData, $refCode) {
 
-                Log::info('🔒 Transaction started');
-
                 // Create the organization with unique order
                 $organizationData['order'] = Organization::generateUniqueOrder();
                 $organizationData['account_type'] = 'organization';
@@ -95,11 +94,6 @@ class CreateOrganizationService
                     $this->processReferral($organization, $refCode, $request->ip(), $request->device_type);
                 }
 
-                // Handle image upload
-                Log::info('🖼️ Checking organization image', [
-                    'has_image' => isset($request['image']),
-                    'image_value' => $request['image'] ?? 'null'
-                ]);
                 if ($request['image']) {
                     Log::info('🖼️ Uploading organization image...');
                     $this->imageservice->ImageUploaderwithvariable(
@@ -111,11 +105,6 @@ class CreateOrganizationService
                     Log::info('✅ Organization image uploaded successfully');
                 }
 
-                // Handle logo upload
-                Log::info('🏷️ Checking organization logo', [
-                    'has_logo' => isset($request['logo']),
-                    'logo_value' => $request['logo'] ?? 'null'
-                ]);
                 if ($request['logo']) {
                     Log::info('🏷️ Uploading organization logo...');
                     $this->imageservice->ImageUploaderwithvariable(
@@ -134,9 +123,9 @@ class CreateOrganizationService
                 }
 
                 // Update subCategories if provided
-                if ($request['sub_categories']) {
-                    Log::info('📂 Syncing sub_categories', ['sub_categories' => $request->sub_categories]);
-                    $organization->subCategories()->sync($request->sub_categories);
+                if ($request['subcategories']) {
+                    Log::info('📂 Syncing sub_categories', ['sub_categories' => $request->subcategories]);
+                    $organization->subCategories()->sync($request->subcategories);
                 }
 
                 // Update keywords if provided

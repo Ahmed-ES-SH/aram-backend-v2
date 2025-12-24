@@ -16,6 +16,7 @@ return new class extends Migration
             $table->decimal('visit_ratio', 10, 2)->default(1);
             $table->decimal('signup_ratio', 10, 2)->default(1);
             $table->decimal('purchase_ratio', 10, 2)->default(1);
+            $table->decimal('service_ratio', 10, 2)->default(1);
             $table->timestamps();
         });
     }

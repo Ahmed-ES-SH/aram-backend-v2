@@ -23,7 +23,7 @@ class UpdateServicePageRequest extends FormRequest
             'price_before_discount' => 'sometimes|numeric',
             'category_id' => 'sometimes|exists:categories,id',
             'type' => 'sometimes|in:one_time,subscription',
-            'order' => 'sometimes|integer',
+            'order' => 'sometimes|integer|unique:service_pages,order,{$id}',
             'status' => 'sometimes|in:active,inactive',
             'whatsapp_number' => 'nullable|string|max:255',
 

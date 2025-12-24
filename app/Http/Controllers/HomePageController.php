@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Services\ImageService;
 use App\Http\Traits\ApiResponse;
 use App\Models\HomePage;
+use App\Models\WebsiteVideo;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -36,12 +37,36 @@ class HomePageController extends Controller
     {
         try {
             $request->validate([
-                'limit_number' => 'nullable|integer|min:1|max:30'
+                'limit_number' => 'nullable|integer|min:1|max:30',
+                'main_page' => 'nullable|boolean',
             ]);
 
             $limit = $request->input('limit_number', 30);
 
             $section = HomePage::findOrFail($id);
+
+            if ($request->boolean('main_page')) {
+
+                $Mainvideo = WebsiteVideo::where("video_id", 'main_page')->first();
+                $demovideo = WebsiteVideo::where("video_id", 'demo_video')->first();
+
+                $data = [
+                    'id' => $section->id,
+                    'main_video' => $Mainvideo,
+                    'demo_video' => $demovideo,
+                ];
+
+                for ($i = 1; $i <= $limit; $i++) {
+                    $column = 'column_' . $i;
+                    $value = $section->$column;
+
+                    $data[$column] = $this->isJson($value)
+                        ? json_decode($value, true)
+                        : $value;
+                }
+
+                return $this->successResponse($data, 200);
+            }
 
             $data = [
                 'id' => $section->id,

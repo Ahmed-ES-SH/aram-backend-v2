@@ -31,6 +31,11 @@ class CardController extends Controller
         try {
             $query = $request->input('query');
             $categoryId = $request->input('category_id');
+            $active = $request->input('active');
+            $minPrice = $request->input('min_price');
+            $maxPrice = $request->input('max_price');
+            $duration = $request->input('duration');
+            $numberOfPromotionalPurchases = $request->input('number_of_promotional_purchases');
 
             $cardsQuery = Card::query()
                 // ✅ Get counts for related benefits & keywords
@@ -54,6 +59,29 @@ class CardController extends Controller
             // ✅ Category filter (if category_id is provided)
             if ($categoryId) {
                 $cardsQuery->where('category_id', $categoryId);
+            }
+
+            // ✅ Active filter
+            if ($request->has('active')) {
+                $cardsQuery->where('active', $active);
+            }
+
+            // ✅ Price range filter
+            if ($minPrice) {
+                $cardsQuery->where('price', '>=', $minPrice);
+            }
+            if ($maxPrice) {
+                $cardsQuery->where('price', '<=', $maxPrice);
+            }
+
+            // ✅ Duration filter
+            if ($duration) {
+                $cardsQuery->where('duration', $duration);
+            }
+
+            // ✅ Number of promotional purchases filter
+            if ($numberOfPromotionalPurchases) {
+                $cardsQuery->where('number_of_promotional_purchases', $numberOfPromotionalPurchases);
             }
 
             // ✅ Get results with pagination (12 per page)

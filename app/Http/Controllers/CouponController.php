@@ -15,6 +15,8 @@ use App\Models\CouponUser;
 use App\Models\OwnedCard;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class CouponController extends Controller
 {
@@ -314,46 +316,67 @@ class CouponController extends Controller
 
 
 
-    public function sendCopuon(Request $request)
+    public function sendCoupon(Request $request)
     {
-        try {
+        $validated = $request->validate([
+            'users' => 'nullable|json',
+            'organizations' => 'nullable|json',
+            'coupon_id' => 'required|exists:coupons,id',
+        ]);
 
-            $request->validate([
-                'users' => 'nullable|json',
-                'organizations' => 'nullable|json',
-                'coupon_id' => 'required|exists:coupons,id',
+        $couponId = $validated['coupon_id'];
+        $users = json_decode($validated['users'] ?? '[]', true);
+        $organizations = json_decode($validated['organizations'] ?? '[]', true);
+
+        // Logical validation: at least one target must exist
+        if (empty($users) && empty($organizations)) {
+            throw ValidationException::withMessages([
+                'targets' => 'At least one user or organization must be selected.',
             ]);
+        }
 
-
-            $couponId = $request->coupon_id;
-            $users = json_decode($request->users, true);
-            $organizations = json_decode($request->organizations, true);
-
+        DB::transaction(function () use ($users, $organizations, $couponId) {
 
             if (!empty($users)) {
-                $userData = array_map(fn($u) => [
-                    'user_id' => $u['id'],
-                    'coupon_id' => $couponId,
-                ], $users);
+                $userData = collect($users)
+                    ->filter(fn($u) => isset($u['id']))
+                    ->map(fn($u) => [
+                        'user_id' => $u['id'],
+                        'coupon_id' => $couponId,
+                    ])
+                    ->values()
+                    ->toArray();
+
+                if (empty($userData)) {
+                    throw new \RuntimeException('Invalid users payload.');
+                }
 
                 CouponUser::upsert($userData, ['user_id', 'coupon_id']);
             }
 
-
             if (!empty($organizations)) {
-                $orgData = array_map(fn($o) => [
-                    'organization_id' => $o['id'],
-                    'coupon_id' => $couponId,
-                ], $organizations);
+                $orgData = collect($organizations)
+                    ->filter(fn($o) => isset($o['id']))
+                    ->map(fn($o) => [
+                        'organization_id' => $o['id'],
+                        'coupon_id' => $couponId,
+                    ])
+                    ->values()
+                    ->toArray();
+
+                if (empty($orgData)) {
+                    throw new \RuntimeException('Invalid organizations payload.');
+                }
 
                 CouponOrganization::upsert($orgData, ['organization_id', 'coupon_id']);
             }
+        });
 
-
-            return $this->successResponse([], 200, 'The Coupon send to selected data successfully');
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            [],
+            200,
+            'Coupon successfully assigned to selected targets.'
+        );
     }
 
 
@@ -432,7 +455,7 @@ class CouponController extends Controller
     {
         try {
             // Get card with relations
-            $coupon = Coupon::with(['subCategories', 'category', 'users', 'organizations'])->findOrFail($id);
+            $coupon = Coupon::with(['subCategories', 'category', 'users:id,name,image,email', 'organizations:id,title,logo,email'])->findOrFail($id);
 
             return $this->successResponse($coupon, 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

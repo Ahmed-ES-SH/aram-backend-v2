@@ -58,6 +58,11 @@ class ServicePageController extends Controller
                 $query->where('price', '<=', $request->max_price);
             }
 
+            // Filter by is_active
+            if ($request->has('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+            }
+
             // Search in slug
             if ($request->has('search')) {
                 $query->searchNormalized($request->search);
@@ -302,6 +307,7 @@ class ServicePageController extends Controller
             'price_before_discount' => $page->price_before_discount,
             'type' => $page->type,
             'category' => $page->category,
+            'order' => $page->order,
             'status' => $page->status,
             'created_at' => $page->created_at?->toISOString(),
             'updated_at' => $page->updated_at?->toISOString(),

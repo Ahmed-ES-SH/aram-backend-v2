@@ -14,10 +14,10 @@ use App\Models\PromoterRatio;
 use App\Models\PromotionActivity;
 use App\Models\Referral;
 use App\Models\User;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Exception;
 
 class UserController extends Controller
 {
@@ -115,6 +115,13 @@ class UserController extends Controller
                 $this->processReferral($user, $request->ref_code, $request->ip(), $request->device_type);
             }
 
+
+            if ($user->location) {
+                if ($this->isJson($user->location)) {
+                    $user->location = json_decode($user->location, true);
+                }
+            }
+
             return $this->successResponse($user, 201);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
@@ -128,6 +135,12 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
+
+            if ($user->location) {
+                if ($this->isJson($user->location)) {
+                    $user->location = json_decode($user->location, true);
+                }
+            }
 
             return $this->successResponse($user, 200);
         } catch (Exception $e) {
@@ -153,6 +166,13 @@ class UserController extends Controller
             // تحديث الصورة إذا تم رفع صورة جديدة
             if ($request->hasFile('image')) {
                 $this->imageservice->ImageUploaderwithvariable($request, $user, 'images/users', 'image');
+            }
+
+
+            if ($user->location) {
+                if ($this->isJson($user->location)) {
+                    $user->location = json_decode($user->location, true);
+                }
             }
 
             return $this->successResponse($user->fresh(), 200);
@@ -197,6 +217,9 @@ class UserController extends Controller
             if ($users->total() === 0) {
                 return $this->noContentResponse();
             }
+
+
+
 
             return $this->paginationResponse($users, 200);
         } catch (Exception $e) {
@@ -378,5 +401,19 @@ class UserController extends Controller
                 'ref_code' => $refCode,
             ]);
         }
+    }
+
+
+
+
+    private function isJson($value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        json_decode($value, true);
+
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }

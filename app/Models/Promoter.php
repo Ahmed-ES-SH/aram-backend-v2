@@ -14,6 +14,7 @@ class Promoter extends Model
         'total_visits',
         'total_signups',
         'total_purchases',
+        'total_purchases_services',
         'total_earnings',
         'discount_percentage',
         'status',

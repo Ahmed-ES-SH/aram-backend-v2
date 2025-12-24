@@ -27,6 +27,7 @@ class StoreOrganiztionWithOfferRequest extends FormRequest
             'password' => 'required|string|min:3',
             'title' => 'required|string',
             'description' => 'required|string',
+            'phone_number' => 'required|string',
             'open_at' => 'required|date_format:H:i',
             'close_at' => 'required|date_format:H:i',
             'confirmation_price' => 'required|numeric|min:0',

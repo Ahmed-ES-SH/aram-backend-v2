@@ -10,5 +10,6 @@ class PromoterRatio extends Model
         'visit_ratio',
         'signup_ratio',
         'purchase_ratio',
+        'service_ratio',
     ];
 }

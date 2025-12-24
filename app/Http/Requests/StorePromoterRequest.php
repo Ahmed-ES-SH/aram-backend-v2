@@ -25,7 +25,7 @@ class StorePromoterRequest extends FormRequest
             'promoter_type' => 'required|in:user,organization',
             'promoter_id' => 'required|integer',
             'referral_code' => 'required|string|max:255',
-            'discount_percentage' => 'required|decimal:1,2',
+            'discount_percentage' => 'required|decimal:1,5',
             'status' => 'required|in:active,disabled',
         ];
     }

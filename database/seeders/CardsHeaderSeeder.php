@@ -32,22 +32,22 @@ class CardsHeaderSeeder extends Seeder
                     [
                         'icon_name' => "FaCrown",
                         'text' => ['en' => "Premium Quality", 'ar' => "جودة عالية"],
-                        'color' => "from-amber-500/20 to-amber-600/10"
+                        'color' => "#F59E0B"
                     ],
                     [
                         'icon_name' => "FaShieldAlt",
                         'text' => ['en' => "Secure", 'ar' => "آمن"],
-                        'color' => "from-emerald-500/20 to-emerald-600/10"
+                        'color' => "#10B981"
                     ],
                     [
                         'icon_name' => "FaPercent",
                         'text' => ['en' => "Exclusive Deals", 'ar' => "عروض حصرية"],
-                        'color' => "from-purple-500/20 to-purple-600/10"
+                        'color' => "#8B5CF6"
                     ],
                     [
                         'icon_name' => "FaClock",
                         'text' => ['en' => "Lifetime Access", 'ar' => "وصول دائم"],
-                        'color' => "from-blue-500/20 to-blue-600/10"
+                        'color' => "#3B82F6"
                     ]
                 ])
             ]

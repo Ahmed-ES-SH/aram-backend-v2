@@ -878,7 +878,7 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
         Route::get('/dashboard/coupons',  'index');
         Route::get('/dashboard/active-coupons',  'activeCoupons');
         Route::post('/dashboard/add-coupon', 'store');
-        Route::post('/dashboard/send-coupon', 'sendCopuon');
+        Route::post('/dashboard/send-coupon', 'sendCoupon');
         Route::post('/dashboard/update-coupon/{id}', 'update');
         Route::delete('/dashboard/delete-coupon/{id}', 'destroy');
     });
@@ -988,7 +988,7 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
         Route::post('/get-articles-by-search', 'getArticlesBySearch');
         Route::post('/add-article', 'store');
         Route::post('/update-article/{id}', 'update');
-        Route::post('/delete-article/{id}', 'destroy');
+        Route::delete('/delete-article/{id}', 'destroy');
     });
 
 

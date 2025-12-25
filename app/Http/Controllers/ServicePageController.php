@@ -9,6 +9,7 @@ use App\Http\Resources\ServicePageResource;
 use App\Http\Services\ServicePageService;
 use App\Http\Traits\ApiResponse;
 use App\Models\ServicePage;
+use App\Models\ServiceForm;
 use App\Models\WebsiteVideo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -99,10 +100,14 @@ class ServicePageController extends Controller
             return $this->notFoundResponse('Service page not found');
         }
 
+        $form = ServiceForm::where('service_page_id', $servicePage->id)->with('fields')->first();
+
         $service_video = WebsiteVideo::where('video_id', $this->formatTitle($servicePage->slug))->first();
 
         // Use setRelation to ensure the resource can access it via $this->video or $this->whenLoaded('video')
         $servicePage->setRelation('video', $service_video);
+
+        $servicePage->setRelation('form', $form);
 
         return new ServicePageResource($servicePage);
     }

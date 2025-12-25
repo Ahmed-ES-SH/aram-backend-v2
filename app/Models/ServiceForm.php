@@ -33,7 +33,7 @@ class ServiceForm extends Model
 
     public function fields(): HasMany
     {
-        return $this->hasMany(ServiceFormField::class)->orderBy('order');
+        return $this->hasMany(ServiceFormField::class , 'service_form_id');
     }
 
     public function submissions(): HasMany

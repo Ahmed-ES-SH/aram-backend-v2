@@ -32,7 +32,7 @@ class StoreUserRequest extends BaseFormRequest
             'gender' => 'required|in:male,female',
             'birth_date' => 'required|date',
             'device_type' => 'nullable|string',
-            'role' => 'nullable|string|in:admin,user',
+            'role' => 'nullable|string|in:admin,user,super_admin',
             'location' => 'nullable|string',
             'ref_code' => 'nullable|string',
         ];

@@ -247,7 +247,6 @@ class ServicePageService
             'ctaSection',
             'category',
             'contactMessages',
-            'form.fields' => fn($q) => $q->orderBy('order'),
         ];
     }
 

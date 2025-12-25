@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateServicePageRequest extends FormRequest
 {
@@ -23,7 +24,11 @@ class UpdateServicePageRequest extends FormRequest
             'price_before_discount' => 'sometimes|numeric',
             'category_id' => 'sometimes|exists:categories,id',
             'type' => 'sometimes|in:one_time,subscription',
-            'order' => 'sometimes|integer|unique:service_pages,order,{$id}',
+            'order' => [
+    'sometimes',
+    'integer',
+    Rule::unique('service_pages', 'order')->ignore($id),
+],
             'status' => 'sometimes|in:active,inactive',
             'whatsapp_number' => 'nullable|string|max:255',
 

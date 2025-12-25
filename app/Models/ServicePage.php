@@ -95,7 +95,7 @@ class ServicePage extends Model
      */
     public function form(): HasOne
     {
-        return $this->hasOne(ServiceForm::class);
+        return $this->hasOne(ServiceForm::class , 'service_page_id');
     }
 
     /**

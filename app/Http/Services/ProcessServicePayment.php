@@ -88,7 +88,7 @@ class ProcessServicePayment
                 'service_id' => $service_id,
                 'user_id' => $user->id,
                 'user_type' => $user->account_type,
-                'order_id' => $order->id,
+                'service_order_id' => $order->id,
                 'invoice_id' => $invoice->id,
                 'status' => ServiceTracking::STATUS_PENDING,
                 'current_phase' => ServiceTracking::PHASE_INITIATION,

@@ -218,9 +218,15 @@ class ServicePageController extends Controller
     public function store(StoreServicePageRequest $request): JsonResponse
     {
         try {
+
+
+            if (ServicePage::where('order', $request->order)->exists()) {
+                return $this->errorResponse('هذا الترتيب موجود بالفعل', 400);
+            }
+
             $servicePage = $this->servicePageService->create($request->validated(), $request);
 
-            return $this->successResponse($servicePage, 201, 'Service page created successfully');
+            return $this->successResponse($servicePage, 201);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -232,10 +238,15 @@ class ServicePageController extends Controller
     public function update(UpdateServicePageRequest $request, int $id): JsonResponse
     {
         try {
+
+            if (ServicePage::where('order', $request->order)->exists()) {
+                return $this->errorResponse('هذا الترتيب موجود بالفعل', 400);
+            }
+
             $servicePage = ServicePage::with($this->servicePageService->getEagerLoadRelations())->findOrFail($id);
             $updatedPage = $this->servicePageService->update($servicePage, $request->validated(), $request);
 
-            return $this->successResponse($updatedPage, 200, 'Service page updated successfully');
+            return $this->successResponse($updatedPage, 200);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

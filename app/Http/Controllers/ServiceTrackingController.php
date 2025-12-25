@@ -471,7 +471,7 @@ class ServiceTrackingController extends Controller
             ServiceTrackingFile::create([
                 'service_tracking_id' => $serviceTracking->id,
                 'disk' => 'public_path', // Indicating custom public path storage
-                'path' => $storagePath . '/' . $filename,
+                'path' => env('BACK_END_URL') . '/' . $storagePath . '/' . $filename,
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $mimeType,
                 'size' => $size,

@@ -24,9 +24,10 @@ class StoreServicePageRequest extends FormRequest
             'order' => 'required|integer',
             'category_id' => 'required|integer',
             'whatsapp_number' => 'nullable|string|max:255',
+            'hero_image' => 'required',
 
-            // Hero Section
-            'hero_section' => 'nullable|array',
+        // Hero Section
+        'hero_section' => 'nullable|array',
 
 
             // Problem Section

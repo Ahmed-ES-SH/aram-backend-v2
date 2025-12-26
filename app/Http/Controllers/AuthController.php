@@ -28,65 +28,42 @@ class AuthController extends Controller
 
 
     public function handleGoogleCallback(Request $request)
-    {
-        try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-            $user = User::firstOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'name' => $googleUser->getName(),
-                    'social_id' => $googleUser->getId(),
-                    'social_type' => "google",
-                    'image' => $googleUser->getAvatar()
-                ]
-            );
-            if (!$user->image) {
-                $user->update(['image' => $googleUser->getAvatar()]);
-            }
-            $token = $user->createToken('auth_token')->plainTextToken;
-            // Then count unread messages
-            $unreadMessagesCount = $user->receivedMessages()
-                ->where('is_read', false)
-                ->count();
+{
+    try {
+        $googleUser = Socialite::driver('google')->stateless()->user();
 
-            // Then count unread notifications
-            $unreadNoftificationsCount = $user->notifications()
-                ->where('is_read', false)
-                ->count();
+        $user = User::firstOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
+                'name' => $googleUser->getName(),
+                'social_id' => $googleUser->getId(),
+                'social_type' => 'google',
+                'image' => $googleUser->getAvatar(),
+            ]
+        );
 
-            return response()->json([
-                'message' => 'User login successful',
-                'user' => $user,
-                'unread_count' => $unreadMessagesCount,
-                'unread_notifications_count' => $unreadNoftificationsCount,
-                'token' => $token,
-                'type' => 'user',
-            ], 200);
-
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Login successful',
-                    'user' => $user,
-                    'token' => $token,
-                ], 200);
-            }
-
-
-            return redirect(config('app.frontend_url') . "/auth/callback?" . http_build_query([
-                'token' => $token
-            ]));
-        } catch (Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Google login failed',
-                    'error' => $e->getMessage(),
-                ], 500);
-            }
-
-            return redirect(config('app.frontend_url') . "/auth/callback?error=" . urlencode($e->getMessage()));
+        if (!$user->image && $googleUser->getAvatar()) {
+            $user->update(['image' => $googleUser->getAvatar()]);
         }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return redirect()->to(
+            config('app.frontend_url') . '/auth/callback?' . http_build_query([
+                'token' => $token,
+            ])
+        );
+
+    } catch (\Throwable $e) {
+
+        return redirect()->to(
+            config('app.frontend_url') . '/auth/callback?' . http_build_query([
+                'error' => 'google_login_failed',
+            ])
+        );
     }
+}
+
 
 
 

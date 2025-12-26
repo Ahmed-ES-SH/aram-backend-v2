@@ -206,6 +206,10 @@ class ServicePageController extends Controller
             // Use setRelation to ensure the resource can access it via $this->video or $this->whenLoaded('video')
             $servicePage->setRelation('video', $service_video);
 
+            $form = ServiceForm::where('service_page_id', $servicePage->id)->with('fields')->first();
+
+            $servicePage->setRelation('form', $form);
+
             return $this->successResponse($servicePage);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
@@ -239,7 +243,11 @@ class ServicePageController extends Controller
     {
         try {
 
-            if (ServicePage::where('order', $request->order)->exists()) {
+           if (
+            ServicePage::where('order', $request->order)
+                ->where('id', '!=', $id)
+                ->exists()
+            ) {
                 return $this->errorResponse('هذا الترتيب موجود بالفعل', 400);
             }
 

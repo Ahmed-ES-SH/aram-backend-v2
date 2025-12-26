@@ -659,7 +659,8 @@ class ServicePageService
 
     protected function updateServiceForm(ServicePage $servicePage, array $formData): void
     {
-        $form = $servicePage->form; // Access relationship directly
+        $form = $servicePage->form; // Access relationship directly\
+        Log::info($form);
 
         $title = $formData['title'] ?? [];
         if (is_string($title)) {

@@ -192,9 +192,10 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = Category::with('sub_categories')->findOrFail($id);
-        return $this->successResponse($category, 200);
+
         try {
+            $category = Category::with('sub_categories')->findOrFail($id);
+            return $this->successResponse($category, 200);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

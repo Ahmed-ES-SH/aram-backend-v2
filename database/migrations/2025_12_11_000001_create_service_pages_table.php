@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('order');
             $table->string('whatsapp_number')->nullable();
             $table->integer('orders_count')->default(0);
-            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('service_categories', 'id')->nullOnDelete()->onUpdate('cascade');
             $table->index('order');
             $table->timestamps();
         });

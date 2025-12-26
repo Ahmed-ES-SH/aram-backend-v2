@@ -7,13 +7,12 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Services\ImageService;
 use App\Http\Traits\ApiResponse;
-use App\Models\CardCategory;
+use App\Models\ServiceCategory;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
-class CardCategoryController extends Controller
+class ServiceCategoryController extends Controller
 {
-
     use ApiResponse;
     protected $imageservice;
 
@@ -28,7 +27,7 @@ class CardCategoryController extends Controller
     public function index()
     {
         try {
-            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->paginate(30);
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')->paginate(30);
             if ($Categories->total() === 0) {
                 return $this->noContentResponse();
             }
@@ -39,14 +38,15 @@ class CardCategoryController extends Controller
     }
 
 
+
+
     public function activeCategories(Request $request)
     {
         try {
 
             $state = $request->state;
 
-            $Categories = CardCategory::withCount('cards')
-                ->orderBy('created_at', 'desc')
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')
                 ->where('is_active', $state)
                 ->paginate(30);
 
@@ -80,11 +80,10 @@ class CardCategoryController extends Controller
             // ✅ SQL replace chain to normalize Arabic columns
             $normalizedSql = TextNormalizer::sqlNormalizeColumn('title_ar');
             // ✅ Execute manual query without Scout
-            $results = CardCategory::withCount('cards')
-                ->where(function ($q) use ($normalizedQuery, $normalizedSql) {
-                    $q->whereRaw("$normalizedSql LIKE ?", ["%$normalizedQuery%"])
-                        ->orWhere('title_en', 'LIKE', "%$normalizedQuery%");
-                })->paginate(30);
+            $results = ServiceCategory::where(function ($q) use ($normalizedQuery, $normalizedSql) {
+                $q->whereRaw("$normalizedSql LIKE ?", ["%$normalizedQuery%"])
+                    ->orWhere('title_en', 'LIKE', "%$normalizedQuery%");
+            })->paginate(30);
 
             return $this->paginationResponse($results, 200);
         } catch (\Exception $e) {
@@ -96,7 +95,7 @@ class CardCategoryController extends Controller
     public function publicCategories()
     {
         try {
-            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->where('is_active', true)->limit(12)->get();
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')->where('is_active', true)->limit(12)->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }
@@ -111,7 +110,7 @@ class CardCategoryController extends Controller
     public function AllPublicCategories()
     {
         try {
-            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->where('is_active', true)->get();
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')->where('is_active', true)->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }
@@ -128,7 +127,7 @@ class CardCategoryController extends Controller
     {
         try {
             $data = $request->validated();
-            $category = new CardCategory();
+            $category = new ServiceCategory();
             $category->fill($data);
             if ($request->has('image')) {
                 $this->imageservice->ImageUploaderwithvariable($request, $category, 'images/cardcategories', 'image');
@@ -146,7 +145,7 @@ class CardCategoryController extends Controller
     {
 
         try {
-            $category = CardCategory::with('cards')->findOrFail($id);
+            $category = ServiceCategory::findOrFail($id);
             return $this->successResponse($category, 200);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
@@ -159,14 +158,13 @@ class CardCategoryController extends Controller
     public function update($id, UpdateCategoryRequest $request)
     {
         try {
-            $category = CardCategory::findOrFail($id);
+            $category = ServiceCategory::findOrFail($id);
             $data = $request->validated();
             $category->update($data);
             if ($request->has('image')) {
                 $this->imageservice->ImageUploaderwithvariable($request, $category, 'images/cardcategories');
             }
             $category->fresh();
-            $category->load('sub_categories');
 
             return $this->successResponse($category, 200);
         } catch (\Exception $e) {
@@ -179,7 +177,7 @@ class CardCategoryController extends Controller
     public function updateState($id, Request $request)
     {
         try {
-            $category = CardCategory::findOrFail($id);
+            $category = ServiceCategory::findOrFail($id);
 
             // Get the new value of is_active from the request
             $is_active = $request->is_active;
@@ -207,7 +205,7 @@ class CardCategoryController extends Controller
     public function destroy($id)
     {
         try {
-            $articleCategory = CardCategory::findOrFail($id);
+            $articleCategory = ServiceCategory::findOrFail($id);
 
             if ($articleCategory->image) {
                 $this->imageservice->deleteOldImage($articleCategory, 'images/cardcategories');

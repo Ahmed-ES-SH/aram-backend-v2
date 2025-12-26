@@ -22,7 +22,7 @@ class UpdateServicePageRequest extends FormRequest
             'is_active' => 'boolean',
             'price' => 'sometimes|numeric',
             'price_before_discount' => 'sometimes|numeric',
-            'category_id' => 'sometimes|exists:categories,id',
+            'category_id' => 'sometimes|exists:service_categories,id',
             'type' => 'sometimes|in:one_time,subscription',
             'order' => 'sometimes|integer',
             'status' => 'sometimes|in:active,inactive',

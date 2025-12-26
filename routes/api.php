@@ -47,6 +47,7 @@ use App\Http\Controllers\OwnedCardController;
 use App\Http\Controllers\PromoterRatioController;
 use App\Http\Controllers\PromoterTrackingController;
 use App\Http\Controllers\PromotionActivityController;
+use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\VariableDataController;
 use App\Http\Controllers\WebsiteVideoController;
 use App\Http\Controllers\ServiceTrackingController;
@@ -198,6 +199,15 @@ Route::get('/sub-categories', [SubCategoryController::class, 'index']);
 Route::get('/public-card-categories', [CardCategoryController::class, 'publicCategories']);
 Route::get('/all-card-public-categories', [CardCategoryController::class, 'AllPublicCategories']);
 Route::get('/card-categories', [CardCategoryController::class, 'index']);
+
+
+// ----------------------------------------
+//  Service Categories Routes ----------------
+// ----------------------------------------
+
+Route::get('/public-service-categories', [ServiceCategoryController::class, 'publicCategories']);
+Route::get('/all-service-public-categories', [ServiceCategoryController::class, 'AllPublicCategories']);
+Route::get('/service-categories', [ServiceCategoryController::class, 'index']);
 
 // ----------------------------------------
 //  Currencies  Routes --------------------
@@ -935,6 +945,21 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
         Route::post('/update-sub-category/{id}', 'update');
         Route::post('/update-sub-category-state/{id}', 'updateState');
         Route::delete('/delete-sub-category/{id}', 'destroy');
+    });
+
+
+
+    // ---------------------------------------
+    // main Categories Routes ------------
+    // ---------------------------------------
+
+    Route::controller(ServiceCategoryController::class)->group(function () {
+        Route::post('/add-service-category', 'store');
+        Route::post('/service-categories/search', 'search');
+        Route::get('/service-category/{id}', 'show');
+        Route::post('/update-service-category/{id}', 'update');
+        Route::post('/update-service-category-state/{id}', 'updateState');
+        Route::delete('/delete-service-category/{id}', 'destroy');
     });
 
 

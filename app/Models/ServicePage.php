@@ -48,7 +48,7 @@ class ServicePage extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(ServiceCategory::class);
     }
 
     public function heroSection(): HasOne
@@ -95,7 +95,7 @@ class ServicePage extends Model
      */
     public function form(): HasOne
     {
-        return $this->hasOne(ServiceForm::class , 'service_page_id');
+        return $this->hasOne(ServiceForm::class, 'service_page_id');
     }
 
     /**

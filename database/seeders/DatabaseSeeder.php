@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             AboutSeeder::class,
             SlideSeeder::class,
             CategorySeeder::class,
+            ServiceCategorySeeder::class,
             CardCategorySeeder::class,
             ArticleCategorySeeder::class,
             TagSeeder::class,

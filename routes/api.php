@@ -181,7 +181,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 
 Route::get('/sub-categories-by-parent', [SubCategoryController::class, 'getSubCategoriesByParent']);
 Route::get('/public-sub-categories', [SubCategoryController::class, 'publicSubCategories']);
-Route::get('/all-public-sub-categories', [SubCategoryController::class, 'AllPublicSubCategories']);
+Route::get('/all-public-sub-categories', [SubCategoryController::class, 'AllSubCategories']);
 Route::get('/sub-categories', [SubCategoryController::class, 'index']);
 
 
@@ -197,7 +197,7 @@ Route::get('/sub-categories', [SubCategoryController::class, 'index']);
 // ----------------------------------------
 
 Route::get('/public-card-categories', [CardCategoryController::class, 'publicCategories']);
-Route::get('/all-card-public-categories', [CardCategoryController::class, 'AllPublicCategories']);
+Route::get('/all-card-categories', [CardCategoryController::class, 'AllCategories']);
 Route::get('/card-categories', [CardCategoryController::class, 'index']);
 
 
@@ -206,6 +206,7 @@ Route::get('/card-categories', [CardCategoryController::class, 'index']);
 // ----------------------------------------
 
 Route::get('/public-service-categories', [ServiceCategoryController::class, 'publicCategories']);
+Route::get('/all-service-categories', [ServiceCategoryController::class, 'AllCategories']);
 Route::get('/all-service-public-categories', [ServiceCategoryController::class, 'AllPublicCategories']);
 Route::get('/service-categories', [ServiceCategoryController::class, 'index']);
 

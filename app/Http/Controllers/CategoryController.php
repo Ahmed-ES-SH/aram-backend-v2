@@ -156,7 +156,7 @@ class CategoryController extends Controller
 
             $state = $request->boolean("public") ?? false;
 
-            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->where('is_active', $state)->get();
+            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }

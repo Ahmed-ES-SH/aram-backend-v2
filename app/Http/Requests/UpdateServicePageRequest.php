@@ -102,16 +102,7 @@ class UpdateServicePageRequest extends FormRequest
 
             // CTA Section
             'cta_section' => 'nullable|array',
-            'cta_section.testimonial_title_ar' => 'sometimes|nullable|string|max:255',
-            'cta_section.testimonial_title_en' => 'sometimes|nullable|string|max:255',
-            'cta_section.cta_section_title_ar' => 'sometimes|required|string|max:255',
-            'cta_section.cta_section_title_en' => 'sometimes|required|string|max:255',
-            'cta_section.cta_section_subtitle_ar' => 'sometimes|required|string',
-            'cta_section.cta_section_subtitle_en' => 'sometimes|required|string',
-            // 'cta_section.cta_section_button1_ar' => 'sometimes|required|string|max:100',
-            // 'cta_section.cta_section_button1_en' => 'sometimes|required|string|max:100',
-            // 'cta_section.cta_section_button2_ar' => 'sometimes|required|string|max:100',
-            // 'cta_section.cta_section_button2_en' => 'sometimes|required|string|max:100',
+          
 
             // Service Form
             'form' => 'nullable|array',

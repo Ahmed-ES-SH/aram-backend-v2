@@ -182,7 +182,7 @@ class ServicePageService
                 $this->updateTestimonials($servicePage, $data['testimonials']);
             }
             if (isset($data['cta_section'])) {
-
+                Log::info( 'all_data', $data);
                 $this->updateCtaSection($servicePage, $data['cta_section']);
             }
 
@@ -625,6 +625,7 @@ class ServicePageService
 
     protected function updateCtaSection(ServicePage $servicePage, array $data): void
     {
+        Log::info('cta_section_from_update', $data);
         $servicePage->ctaSection?->update($data)
             ?? $this->createCtaSection($servicePage, $data);
     }

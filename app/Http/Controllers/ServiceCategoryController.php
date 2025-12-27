@@ -107,10 +107,24 @@ class ServiceCategoryController extends Controller
 
 
 
+    public function AllCategories()
+    {
+        try {
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')->get();
+            if ($Categories->isEmpty()) {
+                return $this->noContentResponse();
+            }
+            return $this->successResponse($Categories, 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+
     public function AllPublicCategories()
     {
         try {
-            $Categories = ServiceCategory::orderBy('created_at', 'desc')->where('is_active', true)->get();
+            $Categories = ServiceCategory::orderBy('created_at', 'desc')->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }

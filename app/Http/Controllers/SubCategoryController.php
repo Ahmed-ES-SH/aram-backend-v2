@@ -114,10 +114,10 @@ class SubCategoryController extends Controller
     }
 
 
-    public function AllPublicSubCategories()
+    public function AllSubCategories()
     {
         try {
-            $Categories = SubCategory::orderBy('created_at', 'desc')->where('is_active', true)->get();
+            $Categories = SubCategory::orderBy('created_at', 'desc')->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }

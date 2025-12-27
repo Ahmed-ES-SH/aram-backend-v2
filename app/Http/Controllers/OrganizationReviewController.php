@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrganizationReview;
 use App\Http\Traits\ApiResponse;
-use App\Models\organizationReview;
+use App\Models\OrganizationReview;
 use Illuminate\Http\Request;
 
 class OrganizationReviewController extends Controller
@@ -17,7 +17,7 @@ class OrganizationReviewController extends Controller
     public function ReviewsForOrg($id)
     {
         try {
-            $reviewsforOrg = organizationReview::where('organization_id', $id)
+            $reviewsforOrg = OrganizationReview::where('organization_id', $id)
                 ->orderBy('created_at', 'desc')
                 ->with('user', function ($query) {
                     $query->select('id', 'name', 'image');
@@ -48,7 +48,7 @@ class OrganizationReviewController extends Controller
     {
         try {
             // حساب عدد المراجعات لكل تصنيف من النجوم (من 1 إلى 5)
-            $reviewsData = organizationReview::where('organization_id', $id)
+            $reviewsData = OrganizationReview::where('organization_id', $id)
                 ->selectRaw('stars, COUNT(*) as count')
                 ->groupBy('stars')
                 ->orderBy('stars', 'asc')
@@ -97,11 +97,11 @@ class OrganizationReviewController extends Controller
     {
         try {
             $data = $request->validated();
-            $review = new organizationReview();
+            $review = new OrganizationReview();
             $review->fill($data);
             $review->save();
             $reviewWithUser = $review->load('user');
-            return $this->successResponse($reviewWithUser, 'Review Added Successfully', 201);
+            return $this->successResponse($reviewWithUser, 201);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -114,7 +114,7 @@ class OrganizationReviewController extends Controller
     public function destroy($id)
     {
         try {
-            $review = organizationReview::findOrFail($id);
+            $review = OrganizationReview::findOrFail($id);
             $review->delete();
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);

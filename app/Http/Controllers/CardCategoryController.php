@@ -108,10 +108,10 @@ class CardCategoryController extends Controller
 
 
 
-    public function AllPublicCategories()
+    public function AllCategories()
     {
         try {
-            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->where('is_active', true)->get();
+            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }

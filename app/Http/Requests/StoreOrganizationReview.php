@@ -24,7 +24,7 @@ class StoreOrganizationReview extends FormRequest
         return [
             'stars' => 'required|integer|min:1|max:5',
             'head_line' => 'required|string|max:255',
-            'content' => 'required|string|min:10',
+            'content' => 'required|string|min:4',
             'like_counts' => 'nullable|integer|min:0',
             'user_id' => 'required|exists:users,id',
             'organization_id' => 'required|exists:organizations,id',

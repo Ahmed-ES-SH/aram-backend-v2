@@ -86,15 +86,10 @@ class ServicePageController extends Controller
      */
     public function show(int $id): JsonResponse|ServicePageResource
     {
-        $locale = $this->getLocale(request());
-        $cacheKey = "service_page_{$id}_{$locale}";
-
-        $servicePage = Cache::remember($cacheKey, 3600, function () use ($id) {
-            return ServicePage::where('id', $id)
-                ->where('status', 'active')
-                ->with($this->servicePageService->getEagerLoadRelations())
-                ->first();
-        });
+        $servicePage = ServicePage::where('id', $id)
+            ->where('status', 'active')
+            ->with($this->servicePageService->getEagerLoadRelations())
+            ->first();
 
         if (!$servicePage) {
             return $this->notFoundResponse('Service page not found');

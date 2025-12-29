@@ -152,7 +152,7 @@ class Organization extends Model
     // Many-to-Many with Coupons
     public function coupons()
     {
-        return $this->belongsToMany(Coupon::class, 'coupon_center')
+        return $this->belongsToMany(Coupon::class, 'coupon_organizations')
             ->withTimestamps();
     }
 

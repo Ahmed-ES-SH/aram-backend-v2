@@ -6,16 +6,36 @@ use App\Http\Requests\StoreServiceTrackingRequest;
 use App\Http\Requests\UpdateServiceTrackingRequest;
 use App\Http\Requests\UpdateServiceTrackingStatusRequest;
 use App\Http\Requests\UpdateServiceTrackingPhaseRequest;
+use App\Http\Services\NotificationService;
+use App\Http\Services\TempUploadService;
+use App\Http\Traits\ApiResponse;
 use App\Models\ServiceTracking;
 use App\Models\Organization;
+use App\Models\PendingServiceOrderFile;
+use App\Models\ServicePage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ServiceTrackingFile;
+use App\Models\User;
+use Exception;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 class ServiceTrackingController extends Controller
 {
+
+    use ApiResponse;
+
+    protected $notificationService;
+    protected $tempUploadService;
+
+    public function __construct(NotificationService $notificationService, TempUploadService $tempUploadService)
+    {
+        $this->notificationService = $notificationService;
+        $this->tempUploadService = $tempUploadService;
+    }
+
     // ========== ADMIN FUNCTIONS ==========
 
     /**
@@ -76,16 +96,62 @@ class ServiceTrackingController extends Controller
      */
     public function store(StoreServiceTrackingRequest $request): JsonResponse
     {
-        $tracking = ServiceTracking::create($request->validated());
+        try {
+            $sender = User::select('id', 'name', 'email', 'phone', 'image')->where('id', 1)->first();
+            $service = ServicePage::select('id', 'slug')->where('id', $request->service_id)->first();
+            $data = $request->validated();
+            $data['start_time'] = now();
 
-        // Handle file uploads
-        $this->handleFileUploads($request, $tracking);
+            $notificationData = [
+                'recipient_id' => $request->user_id,
+                'recipient_type' => $request->user_type,
+                'sender_id' => 1,
+                'sender_type' => 'user',
+                'content' => 'هناك تحديث جديد بخصوص الطلب ذو الرقم ' . $request->service_order_id . ' بخصوص الخدمة ' . $service->slug,
+            ];
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Service tracking created successfully',
-            'data' => $tracking->load(['service', 'order', 'invoice']),
-        ], 201);
+            $tracking = null;
+
+            $pending_files = PendingServiceOrderFile::where('service_order_id', $request->service_order_id)->get();
+
+            DB::transaction(function () use ($data,  $pending_files, &$tracking) {
+                $tracking = ServiceTracking::create($data);
+
+
+
+                foreach ($pending_files as $file) {
+                    $isImage = $file->mime_type && str_starts_with($file->mime_type, 'image/');
+                    $fileType = $isImage ? 'design_file' : 'attachment';
+                    ServiceTrackingFile::create([
+                        'service_tracking_id' => $tracking->id,
+                        'disk' => 'public_path',
+                        'path' => $file->file_path,
+                        'file_type' => $fileType,
+                        'original_name' => $file->original_name,
+                        'mime_type' => $file->mime_type,
+                        'size' => $file->size,
+                        'uploaded_by' => $data['user_id'],
+                        'uploaded_by_type' => $data['user_type'],
+                    ]);
+
+
+                    $file->delete();
+                }
+
+                $tracking->load(['files']);
+            });
+
+            // Notification only after successful transaction
+            $this->notificationService->sendNotification($notificationData, $sender);
+
+            if ($tracking['metadata'] && is_string($tracking['metadata'])) {
+                $tracking['metadata'] = json_decode($tracking['metadata'], true);
+            }
+
+            return $this->successResponse($tracking, 201);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
     }
 
     /**
@@ -423,60 +489,83 @@ class ServiceTrackingController extends Controller
     /**
      * Handle file uploads for service tracking.
      */
-    private function handleFileUploads(Request $request, ServiceTracking $serviceTracking)
+    private function handleFileUploads(Request $request, ServiceTracking $serviceTracking): void
     {
         if (!$request->hasFile('files')) {
             return;
         }
 
         $files = $request->file('files');
-        if (!is_array($files)) {
-            $files = [$files];
+        $files = is_array($files) ? $files : [$files];
+
+        $user = Auth::user();
+        $uploadedByType = $user instanceof Organization ? 'organization' : 'user';
+
+        // Base upload directory (relative to public/)
+        $relativePath = 'uploads/service-tracking';
+        $absolutePath = public_path($relativePath);
+
+        // Ensure directory exists (secure permissions)
+        if (!is_dir($absolutePath)) {
+            mkdir($absolutePath, 0755, true);
         }
 
         foreach ($files as $file) {
-            if (!$file instanceof UploadedFile) {
+            if (!$file instanceof UploadedFile || !$file->isValid()) {
                 continue;
             }
 
-            // Custom storage logic
-            $storagePath = 'uploads/service-tracking';
+            /*
+         |----------------------------------------------------------
+         | Extract ALL metadata BEFORE moving the file
+         |----------------------------------------------------------
+         */
+            $originalName = $file->getClientOriginalName();
+            $extension    = $file->getClientOriginalExtension();
+            $mimeType     = $file->getMimeType();
+            $size         = $file->getSize();
 
-            // Ensure directory exists
-            if (!file_exists(public_path($storagePath))) {
-                mkdir(public_path($storagePath), 0777, true);
-            }
+            $isImage = in_array($mimeType, [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+            ]);
 
-            $originalName = pathinfo(
-                $file->getClientOriginalName(),
-                PATHINFO_FILENAME
-            );
-            $extension = $file->getClientOriginalExtension();
+            $fileType = $isImage ? 'design_file' : 'attachment';
 
-            // Generate unique filename
-            $filename = $originalName . '_' . uniqid() . '.' . $extension;
+            /*
+         |----------------------------------------------------------
+         | Generate safe unique filename
+         |----------------------------------------------------------
+         */
+            $safeName = pathinfo($originalName, PATHINFO_FILENAME);
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $safeName);
 
-            // Move file to public path
-            $file->move(public_path($storagePath), $filename);
+            $filename = $safeName . '_' . uniqid() . '.' . $extension;
 
-            // Calculate size and mime type
-            $size = filesize(public_path($storagePath . '/' . $filename));
-            $mimeType = mime_content_type(public_path($storagePath . '/' . $filename));
+            /*
+         |----------------------------------------------------------
+         | Move file (this deletes the temp php file)
+         |----------------------------------------------------------
+         */
+            $file->move($absolutePath, $filename);
 
-            // Create database record
-            // Determine uploaded_by based on authenticated user
-            $user = Auth::user();
-            $uploadedByType = $user instanceof Organization ? 'organization' : 'user';
-
+            /*
+         |----------------------------------------------------------
+         | Persist file record
+         |----------------------------------------------------------
+         */
             ServiceTrackingFile::create([
                 'service_tracking_id' => $serviceTracking->id,
-                'disk' => 'public_path', // Indicating custom public path storage
-                'path' => env('BACK_END_URL') . '/' . $storagePath . '/' . $filename,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $mimeType,
-                'size' => $size,
-                'uploaded_by' => $user->id,
-                'uploaded_by_type' => $uploadedByType,
+                'disk'                => 'public_path',
+                'path'                => url($relativePath . '/' . $filename),
+                'file_type'           => $fileType,
+                'original_name'       => $originalName,
+                'mime_type'           => $mimeType,
+                'size'                => $size,
+                'uploaded_by'         => $user->id,
+                'uploaded_by_type'    => $uploadedByType,
             ]);
         }
     }

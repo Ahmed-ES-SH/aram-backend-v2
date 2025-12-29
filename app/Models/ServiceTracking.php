@@ -13,10 +13,10 @@ class ServiceTracking extends Model
      */
     protected $fillable = [
         'service_id',
+        'service_order_id',
         'user_id',
         'user_type',
         'metadata',
-        'order_id',
         'status',
         'invoice_id',
         'start_time',
@@ -108,6 +108,14 @@ class ServiceTracking extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(ServicePage::class, 'service_id');
+    }
+
+    /**
+     * Get the service order associated with this tracking.
+     */
+    public function serviceOrder(): BelongsTo
+    {
+        return $this->belongsTo(ServiceOrder::class, 'service_order_id');
     }
 
     /**

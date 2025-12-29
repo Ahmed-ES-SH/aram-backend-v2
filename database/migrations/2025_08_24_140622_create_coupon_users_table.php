@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('coupon_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('organization_id')->nullable()->constrained()->onDelete('cascade');
+            $table->integer('usage_limit')->nullable();
+            $table->integer('current_usage')->nullable();
             $table->timestamps();
         });
     }

@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Event;
+use App\Events\SubscriptionExpired;
+use App\Listeners\SendSubscriptionExpiredNotification;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Storage;
@@ -51,5 +54,10 @@ class AppServiceProvider extends ServiceProvider
 
             return new Filesystem($adapter);
         });
+
+        Event::listen(
+            SubscriptionExpired::class,
+            SendSubscriptionExpiredNotification::class
+        );
     }
 }

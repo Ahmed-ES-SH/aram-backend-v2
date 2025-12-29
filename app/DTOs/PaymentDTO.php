@@ -22,6 +22,7 @@ class PaymentDTO
         public readonly ?string $country,
         public readonly ?string $ipAddress,
         public readonly ?string $deviceType,
+        public readonly ?array $files,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -39,6 +40,8 @@ class PaymentDTO
             'before_discount' => 'nullable',
             'discount' => 'nullable',
             'ref_code' => 'nullable|exists:promoters,referral_code',
+            'files' => 'nullable',
+            'files.*' => 'nullable|file|max:5096',
         ]);
 
         // Standardize decoding logic here
@@ -65,7 +68,8 @@ class PaymentDTO
             refCode: $validated['ref_code'] ?? null,
             country: $request->country ?? null,
             ipAddress: $request->ip(),
-            deviceType: $request->device_type ?? null
+            deviceType: $request->device_type ?? null,
+            files: $validated['files'] ?? null,
         );
     }
 

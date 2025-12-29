@@ -8,6 +8,8 @@ class CouponOrganization extends Model
 {
     protected $fillable = [
         'coupon_id',
-        'organization_id'
+        'organization_id',
+        'usage_limit',
+        'current_usage'
     ];
 }

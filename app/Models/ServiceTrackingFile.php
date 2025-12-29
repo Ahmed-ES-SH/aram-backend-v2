@@ -10,6 +10,7 @@ class ServiceTrackingFile extends Model
         'service_tracking_id',
         'disk',
         'path',
+        'file_type',
         'original_name',
         'mime_type',
         'size',

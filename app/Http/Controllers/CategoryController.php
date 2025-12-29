@@ -27,7 +27,7 @@ class CategoryController extends Controller
     public function index()
     {
         try {
-            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->paginate(30);
+            $Categories = Category::withCount(['sub_categories', 'organizations'])->orderBy('created_at', 'desc')->paginate(30);
             if ($Categories->total() === 0) {
                 return $this->noContentResponse();
             }
@@ -44,7 +44,7 @@ class CategoryController extends Controller
 
             $state = $request->state;
 
-            $Categories = Category::withCount('sub_categories')
+            $Categories = Category::withCount(['sub_categories', 'organizations'])
                 ->orderBy('created_at', 'desc')
                 ->where('is_active', $state)
                 ->paginate(30);
@@ -65,7 +65,7 @@ class CategoryController extends Controller
 
             $state = $request->state;
 
-            $Categories = Category::with('sub_categories')
+            $Categories = Category::withCount(['sub_categories', 'organizations'])
                 ->orderBy('created_at', 'desc')
                 ->where('is_active', $state)
                 ->get();
@@ -97,7 +97,7 @@ class CategoryController extends Controller
             // ✅ SQL replace chain to normalize Arabic columns
             $normalizedSql = TextNormalizer::sqlNormalizeColumn('title_ar');
             // ✅ Execute manual query without Scout
-            $results = Category::withCount('sub_categories')
+            $results = Category::withCount(['sub_categories', 'organizations'])
                 ->where(function ($q) use ($normalizedQuery, $normalizedSql) {
                     $q->whereRaw("$normalizedSql LIKE ?", ["%$normalizedQuery%"])
                         ->orWhere('title_en', 'LIKE', "%$normalizedQuery%");
@@ -156,7 +156,7 @@ class CategoryController extends Controller
 
             $state = $request->boolean("public") ?? false;
 
-            $Categories = Category::withCount('sub_categories')->orderBy('created_at', 'desc')->get();
+            $Categories = Category::withCount(['sub_categories', 'organizations'])->orderBy('created_at', 'desc')->get();
             if ($Categories->isEmpty()) {
                 return $this->noContentResponse();
             }
@@ -194,7 +194,7 @@ class CategoryController extends Controller
     {
 
         try {
-            $category = Category::with('sub_categories')->findOrFail($id);
+            $category = Category::with('organizations:id,title,logo as image')->withCount(['sub_categories'])->findOrFail($id);
             return $this->successResponse($category, 200);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);

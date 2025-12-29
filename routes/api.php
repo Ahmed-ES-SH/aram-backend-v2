@@ -56,6 +56,7 @@ use App\Http\Controllers\ServiceFormFieldController;
 use App\Http\Controllers\ServiceFormSubmissionController;
 use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\ServicePageContactMessageController;
+use App\Http\Controllers\TempUploadController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -543,6 +544,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // -------------------------
 
     Route::controller(UserController::class)->group(function () {
+        Route::get('/users-for-center', 'usersForCenter');
         Route::get('/user/{id}', 'show');
         Route::post('/update-user/{id}', 'update');
         Route::post('/check-password-user/{id}', 'checkPassword');
@@ -601,6 +603,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/account-coupons', [CouponController::class, 'accountCoupons']);
     Route::post('/check-coupon', [CouponController::class, 'checkCoupon']);
+    Route::post('/distribute-coupon', [CouponController::class, 'distribute']);
     Route::get('/get-coupon/{id}', [CouponController::class, 'show']);
 
 
@@ -678,6 +681,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/my-form-submissions', 'mySubmissions');
         Route::get('/my-form-submission/{submission}', 'mySubmissionShow');
     });
+
+
+    // ------------------------------------------
+    //  Temp File Upload Routes ------------------
+    // ------------------------------------------
+
+    Route::controller(TempUploadController::class)->group(function () {
+        Route::post('/uploads/temp', 'upload');
+        Route::delete('/uploads/temp/{uuid}', 'destroy');
+    });
 });
 
 
@@ -723,8 +736,10 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
     //  service orders for admin --
     // ----------------------------
 
+    Route::get('/get-service-orders-options', [ServiceOrderController::class, 'getFilterOptions']);
     Route::get('/all-service-orders', [ServiceOrderController::class, 'index']);
     Route::get('/service-orders/{serviceOrder}', [ServiceOrderController::class, 'adminShow']);
+    Route::post('/service-orders/{serviceOrder}/update-status', [ServiceOrderController::class, 'updateStatus']);
 
 
     // ----------------------------------------
@@ -870,14 +885,6 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
         Route::get('/dashboard/organizations-ids', 'getOrganizationsIds');
         Route::get('/dashboard/organizations-with-selected-data', 'organizationWithSelectedData');
     });
-
-
-
-    // ----------------------------------------
-    //  Services Routes ------------
-    // ----------------------------------------
-
-
 
 
 
@@ -1169,6 +1176,20 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
         // Statistics and Options
         Route::get('/service-tracking-statistics', 'statistics');
         Route::get('/service-tracking-options', 'getOptions');
+    });
+
+
+
+    // ------------------------------------------
+    //  Service Orders Routes (Admin) ------------
+    // ------------------------------------------
+
+    Route::controller(ServiceOrderController::class)->group(function () {
+        Route::get('/service-orders', 'index');
+        Route::post('/add-service-order', 'store');
+        Route::get('/service-order/{serviceOrder}', 'show');
+        Route::post('/update-service-order/{serviceOrder}', 'update');
+        Route::delete('/delete-service-order/{serviceOrder}', 'destroy');
     });
 
 

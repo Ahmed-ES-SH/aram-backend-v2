@@ -353,10 +353,11 @@ class ServicePageSeeder_1 extends Seeder
         }
 
         // Create record
-        \App\Models\ServiceTrackingFile::create([
+        ServiceTrackingFile::create([
             'service_tracking_id' => $tracking->id,
             'disk' => 'public_path',
             'path' => $storagePath . '/' . $filename,
+            'file_type' => 'attachment',
             'original_name' => $filename,
             'mime_type' => mime_content_type($fullPath),
             'size' => filesize($fullPath),

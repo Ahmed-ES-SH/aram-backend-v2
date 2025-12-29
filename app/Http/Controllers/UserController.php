@@ -49,6 +49,28 @@ class UserController extends Controller
         }
     }
 
+    public function usersForCenter(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|max:255',
+        ]);
+
+        $search = trim($request->input('query'));
+
+        $usersQuery = User::where('role', 'user')
+            ->select('id', 'name', 'email', 'image', 'phone');
+
+        $usersQuery->searchNormalized($search);
+
+        $users = $usersQuery->paginate(20);
+
+        if ($users->isEmpty()) {
+            return $this->noContentResponse();
+        }
+
+        return $this->paginationResponse($users, 200);
+    }
+
 
 
     public function usersWithSelectedData(Request $request)

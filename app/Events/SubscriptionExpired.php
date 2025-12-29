@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Events;
+
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class SubscriptionExpired
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $serviceOrderId;
+
+    /**
+     * Create a new event instance.
+     *
+     * @param int $serviceOrderId
+     */
+    public function __construct(int $serviceOrderId)
+    {
+        $this->serviceOrderId = $serviceOrderId;
+    }
+}

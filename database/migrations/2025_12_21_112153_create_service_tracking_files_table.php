@@ -18,6 +18,7 @@ return new class extends Migration
                 ->constrained('service_trackings')
                 ->cascadeOnDelete();
 
+            $table->enum('file_type', ['attachment', 'design_file']);
             $table->string('disk')->default('public');
             $table->string('path');
             $table->string('original_name');

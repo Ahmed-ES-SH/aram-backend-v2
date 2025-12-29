@@ -4,13 +4,18 @@ namespace App\Http\Services;
 
 use App\DTOs\PaymentDTO;
 use App\Http\Traits\ApiResponse;
+use App\Models\PendingServiceOrderFile;
+use App\Models\ServiceOrder;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class PaymentService
 {
     use ApiResponse;
+
+    private const UPLOAD_PATH = 'uploads/service-tracking';
 
     public function __construct(
         protected InvoiceService $invoiceService,
@@ -19,24 +24,31 @@ class PaymentService
         protected ThawaniService $thawaniService
     ) {}
 
+    /**
+     * Create a payment session for the given request.
+     */
     public function createSession(Request $request)
     {
         try {
-            // 1. Create DTO (Internal Validation happens here)
             $dto = PaymentDTO::fromRequest($request);
+            $user = $request->user();
 
-            // 2. Database Operations (Transaction)
-            // We return an array containing needed data for the external API call
-            $transactionResult = DB::transaction(function () use ($dto) {
-
-                // Create Invoice
+            $transactionResult = DB::transaction(function () use ($dto, $user) {
                 $invoice = $this->invoiceService->create($dto);
 
-                // Create Provisional Data
-                $provisionalData = $this->provisionalService->create($dto, $invoice->invoice_number);
+                $order = $this->createServiceOrderIfNeeded($dto, $user, $invoice);
 
-                // Handle Promotion (Updates Provisional Data inside if needed)
+                $provisionalData = $this->provisionalService->create(
+                    $dto,
+                    $invoice->invoice_number,
+                    $order?->id
+                );
+
                 $this->promotionService->process($dto, $provisionalData);
+
+                if ($order && $dto->files) {
+                    $this->storePendingFiles($dto->files, $order->id);
+                }
 
                 return [
                     'invoice' => $invoice,
@@ -44,35 +56,107 @@ class PaymentService
                 ];
             });
 
-            // 3. External API Call (Outside Transaction)
-            // If this fails, we have an invoice pending payment in DB (status='pending' by default in create schema usually, or null).
-            // Thawani failure means user won't pay. Invoice remains unpaid.
-            // This is acceptable and avoids DB locks on external calls.
-
-            $invoice = $transactionResult['invoice'];
-            $provisionalData = $transactionResult['provisionalData'];
-
-            // Build base customer metadata (similar to original buildCustomerMetadata)
-            $customerMetadata = [
-                'customer_id' => $request->user()->id ?? null,
-                'customer_name' => $request->user()->name ?? 'Guest',
-                'customer_email' => $request->user()->email ?? null,
-                'customer_type' => $request->user()->account_type ?? 'user',
-            ];
-
-            $response = $this->thawaniService->createSession(
-                $dto,
-                $provisionalData->uniqueId,
-                $invoice->invoice_number,
-                $customerMetadata
-            );
-
-            return $response->json();
+            return $this->createThawaniSession($request, $dto, $transactionResult);
         } catch (Exception $e) {
-            // Log error if needed
-            // If Thawani failed, we might want to void the invoice? 
-            // For now, returning 500 as per original behavior.
             return $this->errorResponse($e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Create a service order if the payment type is 'service'.
+     */
+    private function createServiceOrderIfNeeded(PaymentDTO $dto, $user, $invoice): ?ServiceOrder
+    {
+        if ($dto->dataType !== 'service') {
+            return null;
+        }
+
+        $serviceDetails = $dto->serviceDetails;
+
+        return ServiceOrder::create([
+            'service_page_id' => $serviceDetails['service_id'],
+            'user_id' => $user->id,
+            'user_type' => $user->account_type,
+            'invoice_id' => $invoice->id,
+            'metadata' => $serviceDetails['metadata'],
+            'status' => 'pending',
+            'payment_status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Store pending files for a service order.
+     * 
+     * @param array<UploadedFile> $files
+     */
+    private function storePendingFiles(array $files, int $orderId): void
+    {
+        $storagePath = public_path(self::UPLOAD_PATH);
+
+        if (!file_exists($storagePath)) {
+            mkdir($storagePath, 0777, true);
+        }
+
+        foreach ($files as $file) {
+            $filename = $this->generateUniqueFilename($file);
+            $fullPath = $storagePath . '/' . $filename;
+
+            $file->move($storagePath, $filename);
+
+            PendingServiceOrderFile::create([
+                'service_order_id' => $orderId,
+                'disk' => 'public',
+                'file_path' => env('BACK_END_URL') . '/' . self::UPLOAD_PATH . '/' . $filename,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => mime_content_type($fullPath),
+                'size' => filesize($fullPath),
+                'expires_at' => now()->addDays(1),
+                'attached_at' => now(),
+            ]);
+        }
+    }
+
+    /**
+     * Generate a unique filename for uploaded file.
+     */
+    private function generateUniqueFilename(UploadedFile $file): string
+    {
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+
+        return $originalName . '_' . uniqid() . '.' . $extension;
+    }
+
+    /**
+     * Create the Thawani payment session.
+     */
+    private function createThawaniSession(Request $request, PaymentDTO $dto, array $transactionResult)
+    {
+        $invoice = $transactionResult['invoice'];
+        $provisionalData = $transactionResult['provisionalData'];
+
+        $customerMetadata = $this->buildCustomerMetadata($request->user());
+
+        $response = $this->thawaniService->createSession(
+            $dto,
+            $provisionalData->uniqueId,
+            $invoice->invoice_number,
+            $customerMetadata
+        );
+
+        return $response->json();
+    }
+
+    /**
+     * Build customer metadata for the payment provider.
+     */
+    private function buildCustomerMetadata($user): array
+    {
+        return [
+            'customer_id' => $user->id ?? null,
+            'customer_name' => $user->name ?? 'Guest',
+            'customer_email' => $user->email ?? null,
+            'customer_type' => $user->account_type ?? 'user',
+        ];
     }
 }

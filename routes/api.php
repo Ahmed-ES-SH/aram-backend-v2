@@ -198,6 +198,7 @@ Route::get('/sub-categories', [SubCategoryController::class, 'index']);
 
 Route::get('/public-card-categories', [CardCategoryController::class, 'publicCategories']);
 Route::get('/all-card-categories', [CardCategoryController::class, 'AllCategories']);
+Route::get('/all-card-public-categories', [CardCategoryController::class, 'AllPublicCategories']);
 Route::get('/card-categories', [CardCategoryController::class, 'index']);
 
 

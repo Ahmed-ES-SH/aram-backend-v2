@@ -52,18 +52,19 @@ class ServiceOrderResource extends JsonResource
         ];
     }
 
-    private function extractFormData(): array
-    {
-        return collect($this->metadata['items']['metadata'] ?? [])
-            ->map(fn($item) => [
-                'key' => $item['key'],
-                'label' => $item['label'],
-                'value' => $item['value'],
-                'type' => $item['type'],
-            ])
-            ->values()
-            ->all();
-    }
+   private function extractFormData(): array
+{
+    return collect($this->metadata['items']['metadata'] ?? [])
+        ->map(fn($item) => is_array($item) ? [
+            'key' => $item['key'] ?? null,
+            'label' => $item['label'] ?? null,
+            'value' => $item['value'] ?? null,
+            'type' => $item['type'] ?? null,
+        ] : null) // إذا كان $item نص، نحوله إلى null
+        ->filter() // إزالة العناصر null
+        ->values()
+        ->all();
+}
 
 
     private function isJson($value): bool

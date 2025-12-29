@@ -121,6 +121,20 @@ class CardCategoryController extends Controller
         }
     }
 
+    
+    public function AllPublicCategories()
+    {
+        try {
+            $Categories = CardCategory::withCount('cards')->orderBy('created_at', 'desc')->get();
+            if ($Categories->isEmpty()) {
+                return $this->noContentResponse();
+            }
+            return $this->successResponse($Categories, 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */

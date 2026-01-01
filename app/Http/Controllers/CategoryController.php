@@ -59,15 +59,12 @@ class CategoryController extends Controller
     }
 
 
-    public function activeCategoriesWithSubCategories(Request $request)
+    public function activeCategoriesWithSubCategories()
     {
         try {
-
-            $state = $request->state;
-
-            $Categories = Category::withCount(['sub_categories', 'organizations'])
+            $Categories = Category::select('id', 'title_ar', 'title_en', 'image',  'icon_name')->withCount(['sub_categories', 'organizations'])
+                ->with('sub_categories')
                 ->orderBy('created_at', 'desc')
-                ->where('is_active', $state)
                 ->get();
 
             if (!$Categories) {
@@ -97,7 +94,8 @@ class CategoryController extends Controller
             // ✅ SQL replace chain to normalize Arabic columns
             $normalizedSql = TextNormalizer::sqlNormalizeColumn('title_ar');
             // ✅ Execute manual query without Scout
-            $results = Category::withCount(['sub_categories', 'organizations'])
+            $results = Category::with('sub_categories')
+                ->withCount(['sub_categories', 'organizations'])
                 ->where(function ($q) use ($normalizedQuery, $normalizedSql) {
                     $q->whereRaw("$normalizedSql LIKE ?", ["%$normalizedQuery%"])
                         ->orWhere('title_en', 'LIKE', "%$normalizedQuery%");
@@ -111,27 +109,9 @@ class CategoryController extends Controller
 
 
 
-    public function publicCategories(Request $request)
+    public function publicCategories()
     {
         try {
-
-            $request->validate([
-                'public' => 'nullable|boolean',
-            ]);
-
-            $state = $request->boolean("public") ?? false;
-
-            if ($state == true) {
-                $Categories = Category::withCount(['sub_categories', 'organizations'])
-                    ->with('sub_categories')
-                    ->orderBy('created_at', 'desc')
-                    ->where('is_active', true)
-                    ->paginate(12);
-                if ($Categories->isEmpty()) {
-                    return $this->noContentResponse();
-                }
-                return $this->paginationResponse($Categories, 200);
-            }
 
             $Categories = Category::withCount(['sub_categories', 'organizations'])
                 ->with('sub_categories')
@@ -264,6 +244,24 @@ class CategoryController extends Controller
             $articleCategory->delete();
 
             return $this->successResponse(['name' => $articleCategory->title_en], 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function multiDestroy(Request $request)
+    {
+        try {
+            $ids = $request->ids;
+
+            if (is_string($ids)) {
+                $ids = json_decode($ids, true);
+            }
+
+            Category::whereIn('id', $ids)->delete();
+            return $this->successResponse(['message' => 'Deleted successfully'], 200);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

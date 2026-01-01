@@ -18,6 +18,7 @@ class SocialContactInfoSeeder extends Seeder
             [
                 'whatsapp_number' => '+201234567890',
                 'gmail_account' => 'company@gmail.com',
+                'official_account' => 'Info@aram-gulf.com',
                 'facebook_account' => 'https://www.facebook.com/company',
                 'x_account' => 'https://twitter.com/company',
                 'youtube_account' => 'https://www.youtube.com/company',

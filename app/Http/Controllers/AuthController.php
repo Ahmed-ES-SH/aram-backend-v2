@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Traits\ApiResponse;
 use App\Mail\SendOTPCode;
+use App\Models\Notification;
 use App\Models\Organization;
 use App\Models\PromotionActivity;
 use App\Models\User;
@@ -28,41 +29,40 @@ class AuthController extends Controller
 
 
     public function handleGoogleCallback(Request $request)
-{
-    try {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
-        $user = User::firstOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name' => $googleUser->getName(),
-                'social_id' => $googleUser->getId(),
-                'social_type' => 'google',
-                'image' => $googleUser->getAvatar(),
-            ]
-        );
+            $user = User::firstOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'name' => $googleUser->getName(),
+                    'social_id' => $googleUser->getId(),
+                    'social_type' => 'google',
+                    'image' => $googleUser->getAvatar(),
+                ]
+            );
 
-        if (!$user->image && $googleUser->getAvatar()) {
-            $user->update(['image' => $googleUser->getAvatar()]);
+            if (!$user->image && $googleUser->getAvatar()) {
+                $user->update(['image' => $googleUser->getAvatar()]);
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return redirect()->to(
+                config('app.frontend_url') . '/auth/callback?' . http_build_query([
+                    'token' => $token,
+                ])
+            );
+        } catch (\Throwable $e) {
+
+            return redirect()->to(
+                config('app.frontend_url') . '/auth/callback?' . http_build_query([
+                    'error' => 'google_login_failed',
+                ])
+            );
         }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return redirect()->to(
-            config('app.frontend_url') . '/auth/callback?' . http_build_query([
-                'token' => $token,
-            ])
-        );
-
-    } catch (\Throwable $e) {
-
-        return redirect()->to(
-            config('app.frontend_url') . '/auth/callback?' . http_build_query([
-                'error' => 'google_login_failed',
-            ])
-        );
     }
-}
 
 
 
@@ -154,11 +154,19 @@ class AuthController extends Controller
                 $account->makeHidden(['password', 'remember_token']);
             }
 
+
+            $notifications = Notification::where('recipient_id', $account->id)
+                ->where('recipient_type', $type)
+                ->where('is_read', false)
+                ->with('sender')
+                ->get();
+
             return response()->json([
                 'message' => ucfirst($type) . ' login successful',
                 'account' => $account,
                 'unread_count' => $unreadMessagesCount,
                 'unread_notifications_count' => $unreadNoftificationsCount,
+                'notifications' => $notifications,
                 'token' => $plainToken,
                 'type' => $type,
                 'data' => true

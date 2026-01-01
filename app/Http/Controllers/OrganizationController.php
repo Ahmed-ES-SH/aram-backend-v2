@@ -197,6 +197,37 @@ class OrganizationController extends Controller
         return $this->deleteOrganizationService->destroy($id);
     }
 
+
+    public function multiDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required',
+            'ids.*' => 'required|exists:organizations,id'
+        ]);
+
+        $ids = $request->input('ids');
+
+        // إذا كانت ids نص JSON
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true);
+        }
+
+        foreach ($ids as $id) {
+            $this->deleteOrganizationService->destroy($id);
+        }
+
+        return response()->json([
+            'message' => 'Organizations deleted successfully'
+        ], 200);
+    }
+
+
+    public function getAllOrgsWithoutTimes()
+    {
+        $orgs = Organization::where('open_at', null)->where('close_at', null)->pluck('id')->toArray();
+        return $this->successResponse($orgs, 200);
+    }
+
     // ===============================
     // Case 17: Check organization password
     // ===============================

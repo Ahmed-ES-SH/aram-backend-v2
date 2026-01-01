@@ -18,23 +18,23 @@ class AboutSeeder extends Seeder
             [
                 'first_section_title_en' => 'First Section Title (EN)',
                 'first_section_title_ar' => 'عنوان القسم الأول',
-                'first_section_contnet_ar' => 'محتوى القسم الأول بالعربية',
-                'first_section_contnet_en' => 'First section content in English',
+                'first_section_content_ar' => 'محتوى القسم الأول بالعربية',
+                'first_section_content_en' => 'First section content in English',
 
                 'second_section_title_en' => 'Second Section Title (EN)',
                 'second_section_title_ar' => 'عنوان القسم الثاني',
-                'second_section_contnet_ar' => 'محتوى القسم الثاني بالعربية',
-                'second_section_contnet_en' => 'Second section content in English',
+                'second_section_content_ar' => 'محتوى القسم الثاني بالعربية',
+                'second_section_content_en' => 'Second section content in English',
 
                 'thired_section_title_en' => 'Third Section Title (EN)',
                 'thired_section_title_ar' => 'عنوان القسم الثالث',
-                'thired_section_contnet_ar' => 'محتوى القسم الثالث بالعربية',
-                'thired_section_contnet_en' => 'Third section content in English',
+                'thired_section_content_ar' => 'محتوى القسم الثالث بالعربية',
+                'thired_section_content_en' => 'Third section content in English',
 
                 'fourth_section_title_en' => 'Fourth Section Title (EN)',
                 'fourth_section_title_ar' => 'عنوان القسم الرابع',
-                'fourth_section_contnet_ar' => 'محتوى القسم الرابع بالعربية',
-                'fourth_section_contnet_en' => 'Fourth section content in English',
+                'fourth_section_content_ar' => 'محتوى القسم الرابع بالعربية',
+                'fourth_section_content_en' => 'Fourth section content in English',
 
                 'show_map' => true,
                 'address' => '1234 Street Name, City, Country',

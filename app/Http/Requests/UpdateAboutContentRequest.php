@@ -38,14 +38,16 @@ class UpdateAboutContentRequest extends FormRequest
             'fourth_section_title_ar' => 'string|sometimes',
             'fourth_section_content_ar'         => 'sometimes|string',
             'fourth_section_content_en'         => 'sometimes|string',
-            'show_map'          => 'sometimes|boolean',
-            'address'           => 'nullable|string|max:255',
             'first_section_image'       => 'nullable',
             'second_section_image'      => 'nullable',
             'thired_section_image'       => 'nullable',
             'fourth_section_image'      => 'nullable',
+            'show_map'          => 'sometimes|boolean',
+            'address'           => 'nullable|string|max:255',
             'main_video'        => 'nullable',
             'link_video'        => 'nullable',
+            'cooperation_pdf'        => 'nullable',
+
         ];
     }
 }

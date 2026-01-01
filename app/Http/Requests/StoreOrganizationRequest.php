@@ -50,6 +50,8 @@ class StoreOrganizationRequest extends FormRequest
             'booking_status'        => 'required|boolean',
             'cooperation_file'      => 'nullable|string',
             'account_type'          => 'string|in:organization',
+            'categories' => 'nullable|array',
+            'sub_categories' => 'nullable|array',
         ];
     }
 
@@ -66,6 +68,13 @@ class StoreOrganizationRequest extends FormRequest
         if ($this->has('sub_categories') && is_string($this->sub_categories)) {
             $this->merge([
                 'sub_categories' => json_decode($this->sub_categories, true),
+            ]);
+        }
+
+
+        if ($this->has('categories') && is_string($this->categories)) {
+            $this->merge([
+                'categories' => json_decode($this->categories, true),
             ]);
         }
 

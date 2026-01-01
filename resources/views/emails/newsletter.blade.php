@@ -1,129 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $data['subject'] }}</title>
+    <meta charset="utf-8">
     <style>
-        /* تنسيقات عامة */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f7fafc;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
 
         .email-container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
         }
 
         .header {
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
         }
 
         .header h1 {
-            color: #2d3748;
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0;
-            padding: 10px 0;
+            color: #333;
         }
 
-        .header p {
-            color: #4a5568;
-            font-size: 16px;
-            margin: 5px 0 0;
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
 
-        .content {
-            padding: 25px 0;
-            color: #4a5568;
-            line-height: 1.8;
-            font-size: 16px;
+        .section:last-child {
+            border-bottom: none;
         }
 
-        .content a {
-            color: #3182ce;
-            text-decoration: none;
-            font-weight: 600;
+        .section img {
+            max-width: 100%;
+            border-radius: 4px;
+            display: block;
+            margin: 0 auto;
         }
 
-        .content a:hover {
-            text-decoration: underline;
+        .section-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
 
-        .footer {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #3182ce;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .button {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 12px 24px;
-            background-color: #3182ce;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background-color 0.3s ease;
-        }
-
-        .button:hover {
-            background-color: #2c5282;
-        }
-
-        .icon {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            margin-right: 8px;
+        .section-desc {
+            color: #555;
+            line-height: 1.5;
         }
     </style>
 </head>
 
-<body style="direction:rtl;">
+<body>
     <div class="email-container">
-        <!-- العنوان -->
         <div class="header">
-            <h1>{{ $data['subject'] }}</h1>
-            <p> Newsletter from {{ env('MAIL_FROM_NAME') }} </p>
+            <h1>{{ $newsletter->subject }}</h1>
+            @if($newsletter->content)
+            <p>{{ $newsletter->content }}</p>
+            @endif
         </div>
 
-        <!-- المحتوى -->
-        <div class="content">
-            {!! $data['content'] !!}
+        @foreach([1, 2, 3] as $i)
+        @php
+        $img = $newsletter->{'section_'.$i.'_image'};
+        $title = $newsletter->{'section_'.$i.'_title'};
+        $desc = $newsletter->{'section_'.$i.'_description'};
+        @endphp
 
-
+        @if($img || $title)
+        <div class="section">
+            @if($img)
+            <img src="{{ $img }}" alt="Image">
+            @else
+            @if($title)
+            <h2 class="section-title">{{ $title }}</h2>
+            @endif
+            @if($desc)
+            <div class="section-desc">
+                {!! nl2br(e($desc)) !!}
+            </div>
+            @endif
+            @endif
         </div>
-
-        <!-- التذييل -->
-        <div class="footer">
-            <p>&copy; {{ date('Y') }} Gulf Aram Limited . All rights reserved. جميع الحقوق محفوظة.</p>
-        </div>
+        @endif
+        @endforeach
     </div>
 </body>
 

@@ -74,25 +74,6 @@ class AboutController extends Controller
                 }
             }
 
-            // معالجة الفيديو
-            if ($request->has('main_video')) {
-                $mainVideo = $request->input('main_video');
-
-                if ($request->hasFile('main_video')) {
-                    // إذا كان ملف، يتم رفعه
-                    $videoFile = $request->file('main_video');
-                    $filename = 'video_' . date('YmdHis') . '.' . $videoFile->getClientOriginalExtension();
-                    $videoFile->move(public_path('videos/companydetailes'), $filename);
-                    $videoUrl = url('videos/companydetailes/' . $filename);
-
-                    // تخزين الرابط في الحقل
-                    $detailes->main_video = $videoUrl;
-                } else {
-                    // إذا كان رابط، يتم تخزينه مباشرة
-                    $detailes->main_video = $mainVideo;
-                }
-            }
-
             // حفظ البيانات
             $detailes->save();
 

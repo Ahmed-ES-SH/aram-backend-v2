@@ -43,15 +43,11 @@ class SubCategoryController extends Controller
         try {
             $request->validate([
                 'parent_id' => 'required|exists:categories,id',
-                'is_active' => 'nullable|boolean',
                 'query'     => 'nullable|string|max:255',
             ]);
 
             $categories = SubCategory::with('parent:id,image,title_en')->withCount('organizations')->where('parent_id', $request->parent_id);
 
-            if (!is_null($request->is_active)) {
-                $categories->where('is_active', $request->is_active);
-            }
 
             if (!empty($request->query('query'))) {
                 $query = $request->query('query', ''); // default string

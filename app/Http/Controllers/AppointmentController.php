@@ -94,8 +94,8 @@ class AppointmentController extends Controller
                 ], 400);
             }
 
-            $start = Carbon::createFromFormat('Y-m-d H:i:s', "$date $openAt");
-            $end = Carbon::createFromFormat('Y-m-d H:i:s', "$date $closeAt");
+            $start = Carbon::parse("$date $openAt");
+            $end   = Carbon::parse("$date $closeAt");
 
             // جلب المواعيد التي قد تتداخل مع نافذة العمل
             $bookedAppointments = Appointment::where('organization_id', $organization->id)
@@ -109,10 +109,10 @@ class AppointmentController extends Controller
 
             // حوّل إلى Carbons واعتبر end_time = start + 1 hour إذا كانت null
             $booked = $bookedAppointments->map(function ($a) use ($end) {
-                $s = Carbon::createFromFormat('Y-m-d H:i:s', $a->start_time);
+                $s = Carbon::parse($a->start_time);
                 // إذا لم يوجد end_time نفترض ساعة واحدة فقط
                 $e = $a->end_time
-                    ? Carbon::createFromFormat('Y-m-d H:i:s', $a->end_time)
+                    ? Carbon::parse($a->end_time)
                     : $s->copy()->addHour();
 
                 // لا نجعل الانتهاء يتجاوز وقت إغلاق المركز (clamp)

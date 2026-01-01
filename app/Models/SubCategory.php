@@ -27,8 +27,8 @@ class SubCategory extends Model
     {
         return $this->belongsToMany(
             Organization::class,
-            'organization_categories',   // pivot table
-            'category_id',            // FK in pivot
+            'organization_sub_categories',   // pivot table
+            'subcategory_id',            // FK in pivot
             'organization_id'            // FK in pivot
         );
     }

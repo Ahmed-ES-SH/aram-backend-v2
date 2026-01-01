@@ -36,6 +36,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController; // wait
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\HomePageController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrganizationReviewController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewLikesCheckController;
@@ -58,6 +59,7 @@ use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\ServicePageContactMessageController;
 use App\Http\Controllers\TempUploadController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TodoController;
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -137,6 +139,13 @@ Route::controller(SocialAccountController::class)->group(function () {
 
 Route::get('/get-video', [WebsiteVideoController::class, 'getVideo']);
 Route::get('/get-main-page-videos', [WebsiteVideoController::class, 'getMainPageVideos']);
+
+Route::get('/newsletters', [NewsletterController::class, 'index']);
+Route::post('/newsletters', [NewsletterController::class, 'store']);
+Route::get('/newsletters/{id}', [NewsletterController::class, 'show']);
+Route::put('/newsletters/{id}', [NewsletterController::class, 'update']);
+Route::delete('/newsletters/{id}', [NewsletterController::class, 'destroy']);
+Route::post('/newsletters/{id}/send', [NewsletterController::class, 'send']);
 
 // ----------------------------------------
 //  home page Routes ----------------
@@ -272,12 +281,15 @@ Route::controller(OrganizationController::class)->group(function () {
     Route::post('/register-org', 'StoreOgranizationWithOffer');
     Route::post('/validate-org-email', 'validateEmail');
     Route::get('/organizations-locations', 'getLocations');
+    Route::delete('/multi-delete', 'multiDestroy');
+    Route::get('/all-org-without-times', 'getAllOrgsWithoutTimes');
 });
 
 
 
 Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories-by-state', 'activeCategories');
+    Route::delete('/multi-cats-delete', 'multiDestroy');
     Route::get('/categories-with-subcategories', 'activeCategoriesWithSubCategories');
 });
 
@@ -614,7 +626,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     Route::get('/account-offers', [OfferController::class, 'accountOffers']);
-    Route::post('add-offer', [OfferController::class, 'store']);
+    Route::post('/add-offer', [OfferController::class, 'store']);
     Route::get('/get-offer/{id}', [OfferController::class, 'show']);
 
     // ------------------------------------------
@@ -681,6 +693,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/submit-service-form/{serviceForm}', 'submit');
         Route::get('/my-form-submissions', 'mySubmissions');
         Route::get('/my-form-submission/{submission}', 'mySubmissionShow');
+    });
+
+
+    // ------------------------------------------
+    //  To-Do List Routes -----------------------
+    // ------------------------------------------
+
+    Route::controller(TodoController::class)->group(function () {
+        Route::get('/todos', 'index');
+        Route::post('/todos', 'store');
+        Route::get('/todos/{id}', 'show');
+        Route::put('/todos/{id}', 'update');
+        Route::delete('/todos/{id}', 'destroy');
     });
 
 
@@ -1132,9 +1157,7 @@ Route::middleware(['auth:sanctum', 'checkAdmin'])->group(function () {
 
     Route::controller(MemberController::class)->group(function () {
         Route::get('/members',  'index');
-        Route::post('/members-by-email/{searchContent}',  'getMembersByEmail');
-        Route::get('/get-members-ids',  'getMembersIds');
-        Route::post('/send-newsletter',  'sendNewsletter');
+        Route::get('/get-members-emails',  'getMembersEmails');
         Route::delete('/unsubscribe/{id}',  'unsubscribe');
     });
 

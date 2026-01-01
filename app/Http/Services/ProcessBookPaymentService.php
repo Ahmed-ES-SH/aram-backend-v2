@@ -13,6 +13,7 @@ use App\Models\Wallet;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProcessBookPaymentService
 {
@@ -28,14 +29,16 @@ class ProcessBookPaymentService
     public function processBookPayment($data)
     {
         try {
-            $provisionalData = ProvisionalData::where('id', $data['provisionalData_id'])->firstOrFail();
+            $provisionalData = ProvisionalData::where('uniqueId', $data['provisionalData_id'])->firstOrFail();
             $invoice = Invoice::where('invoice_number', $data['invoice_number'])->firstOrFail();
 
             if ($invoice->status == 'paid') {
                 return $this->errorResponse('This invoice has already been paid.');
             }
 
-            $book = json_decode($provisionalData->details, true);
+            $data = json_decode($provisionalData->metadata, true);
+            $book = $data['items'];
+            Log::info($book);
             $organization = Organization::findOrFail($book['orgId']);
             // نفعل المعاملة لحماية الترحيل لو فشل شيء
             DB::beginTransaction();

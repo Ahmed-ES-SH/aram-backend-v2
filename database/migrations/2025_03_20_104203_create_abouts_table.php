@@ -22,14 +22,14 @@ return new class extends Migration
             $table->string('thired_section_title_en')->nullable(); //
             $table->string('fourth_section_title_ar')->nullable(); //
             $table->string('fourth_section_title_en')->nullable(); //
-            $table->text('first_section_contnet_ar')->nullable();  // محتوى عن الشركة بالعربية
-            $table->text('first_section_contnet_en')->nullable();  // محتوى عن الشركة بالإنجليزية
-            $table->text('second_section_contnet_ar')->nullable();  // رؤية الشركة بالعربية
-            $table->text('second_section_contnet_en')->nullable();  // رؤية الشركة بالإنجليزية
-            $table->text('thired_section_contnet_ar')->nullable();  // أهداف الشركة بالعربية
-            $table->text('thired_section_contnet_en')->nullable();  // أهداف الشركة بالإنجليزية
-            $table->text('fourth_section_contnet_en')->nullable();  // قيم الشركة بالإنجليزية
-            $table->text('fourth_section_contnet_ar')->nullable();  // قيم الشركة بالعربية
+            $table->text('first_section_content_ar')->nullable();  // محتوى عن الشركة بالعربية
+            $table->text('first_section_content_en')->nullable();  // محتوى عن الشركة بالإنجليزية
+            $table->text('second_section_content_ar')->nullable();  // رؤية الشركة بالعربية
+            $table->text('second_section_content_en')->nullable();  // رؤية الشركة بالإنجليزية
+            $table->text('thired_section_content_ar')->nullable();  // أهداف الشركة بالعربية
+            $table->text('thired_section_content_en')->nullable();  // أهداف الشركة بالإنجليزية
+            $table->text('fourth_section_content_en')->nullable();  // قيم الشركة بالإنجليزية
+            $table->text('fourth_section_content_ar')->nullable();  // قيم الشركة بالعربية
             $table->boolean('show_map')->nullable();  // إظهار الخريطة
             $table->string('address')->nullable();  // عنوان الشركة (اختياري)
             $table->string('first_section_image')->nullable();  // مسار صورة "عن الشركة" (اختياري)

@@ -24,12 +24,21 @@ class UpdateSocialAccountsRequest extends BaseFormRequest
         return [
             'whatsapp_number' => ['nullable', 'string', 'regex:/^\+?[0-9]{7,16}$/'], // رقم هاتف بصيغة صحيحة
             'gmail_account' => ['nullable', 'email', 'ends_with:@gmail.com'], // يجب أن يكون بريد Gmail
-            'facebook_account' => ['nullable', 'url'], // يجب أن يكون رابط URL
-            'x_account' => ['nullable', 'url'], // X (تويتر سابقًا)
-            'youtube_account' => ['nullable', 'url'], // رابط يوتيوب
-            'instgram_account' => ['nullable', 'url'], // رابط انستجرام
-            'snapchat_account' => ['nullable', 'url'], // رابط سناب شات
-            'tiktok_account' => ['nullable', 'url'], // رابط سناب شات
+            'official_account' => ['nullable', 'string'], // يجب أن يكون رابط URL
+            'facebook_account' => ['nullable', 'string'], // يجب أن يكون رابط URL
+            'x_account' => ['nullable', 'string'], // X (تويتر سابقًا)
+            'youtube_account' => ['nullable', 'string'], // رابط يوتيوب
+            'instgram_account' => ['nullable', 'string'], // رابط انستجرام
+            'snapchat_account' => ['nullable', 'string'], // رابط سناب شات
+            'tiktok_account' => ['nullable', 'string'], // رابط سناب شات
+            'official_state' => ['nullable', 'boolean'],
+            'gmail_state' => ['nullable', 'boolean'],
+            'facebook_state' => ['nullable', 'boolean'],
+            'x_state' => ['nullable', 'boolean'],
+            'youtube_state' => ['nullable', 'boolean'],
+            'instgram_state' => ['nullable', 'boolean'],
+            'snapchat_state' => ['nullable', 'boolean'],
+            'tiktok_state' => ['nullable', 'boolean'],
         ];
     }
 }

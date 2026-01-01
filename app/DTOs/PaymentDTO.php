@@ -36,6 +36,7 @@ class PaymentDTO
             'payment_method' => 'required',
             'cardsDetails' => 'nullable',
             'bookDetails' => 'nullable',
+            'bookDetailes' => 'nullable',
             'serviceDetails' => 'nullable',
             'before_discount' => 'nullable',
             'discount' => 'nullable',
@@ -46,7 +47,7 @@ class PaymentDTO
 
         // Standardize decoding logic here
         $cardsRaw = $request->input('cardsDetails');
-        $bookRaw = $request->input('bookDetails');
+        $bookRaw = $request->input('bookDetails') ?? $request->input('bookDetailes');
         $serviceRaw = $request->input('serviceDetails');
 
         $cards = is_string($cardsRaw) ? json_decode($cardsRaw, true) : ($cardsRaw ?? []);

@@ -40,7 +40,7 @@ class ThawaniService
     {
         if ($dto->dataType === 'book' && $currentDetails) {
             return [[
-                'name' => substr($currentDetails['orgTitle'] ?? 'Book', 0, 34) . '...',
+                'name' => mb_substr($currentDetails['orgTitle'] ?? 'Book', 0, 34, 'UTF-8') . '...',
                 'is_paid' => $currentDetails['is_paid'] ?? false,
                 'quantity' => 1,
                 'unit_amount' => (int) round(($currentDetails['price'] ?? 0) * 1000),
@@ -49,7 +49,7 @@ class ThawaniService
 
         if ($dto->dataType === 'service' && $currentDetails) {
             return [[
-                'name' => substr($currentDetails['slug'] ?? 'Service', 0, 34) . '...',
+                'name' => mb_substr($currentDetails['slug'] ?? 'Service', 0, 34, 'UTF-8') . '...',
                 'quantity' => 1,
                 'unit_amount' => (int) round(($currentDetails['price'] ?? 0) * 1000),
             ]];
